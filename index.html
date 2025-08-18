@@ -95,7 +95,7 @@
         try {
           const storedMessages = JSON.parse(localStorage.getItem('esriChatMessages') || '[]');
           setMessages(storedMessages.length > 0 ? storedMessages : [
-            { text: 'Hello! I\'m Geo-Assist, your dedicated helper for all things Esri GIS. Ask me anything about GIS, ArcGIS tools, or troubleshooting!', sender: 'bot' }
+            { text: 'Hello! I\'m Geo-Assist, your dedicated helper for all things Esri GIS. Ask me anything about GIS, ArcGIS tools, or creative use cases!', sender: 'bot' }
           ]);
         } catch (e) {
           console.error('Failed to load messages from localStorage:', e);
@@ -123,7 +123,7 @@
         }
       }, [messages]);
 
-      // Expanded Knowledge base with GIS definition
+      // Expanded Knowledge base with GIS applications
       const esriKnowledgeBase = `
 ## Esri GIS Technical Support Knowledge Base
 
@@ -142,13 +142,29 @@
 - **Esri Context**: Esri’s ArcGIS platform includes ArcGIS Pro (desktop), ArcGIS Online (web), and apps like Experience Builder for interactive apps.
 - **Sources**: Esri Documentation (https://www.esri.com/en-us/what-is-gis/overview).
 
-### 2. Geoprocessing Tools in ArcGIS Pro
+### 2. GIS Applications and Use Cases
+- **Urban Planning**:
+  - **Land Use Analysis**: Combine zoning and demographic data with overlay tools for development planning.
+  - **Transportation**: Analyze traffic patterns using ArcGIS Network Analyst.
+  - **Community Engagement**: Create public-facing dashboards in ArcGIS Experience Builder.
+  - Example: Map affordable housing zones and visualize in a web app.
+- **Environmental Management**:
+  - **Conservation**: Map wildlife habitats and assess impacts using ArcGIS Pro.
+  - **Climate Analysis**: Visualize urban heat islands with raster analysis.
+  - Example: Create a web map of green spaces for conservation planning.
+- **Business and Finance**:
+  - **Site Selection**: Analyze customer demographics and proximity for branch locations (e.g., credit unions).
+  - **Market Analysis**: Use ArcGIS Business Analyst for demographic insights.
+  - Example: Map credit union branches to optimize service coverage.
+- **Sources**: Esri Urban Planning Solutions (https://www.esri.com/en-us/industries/urban-planning/overview), Esri Business Analyst (https://www.esri.com/en-us/arcgis/products/arcgis-business-analyst).
+
+### 3. Geoprocessing Tools in ArcGIS Pro
 - **Analysis Toolbox**: Tools for spatial analysis, including Overlay (e.g., Union, Intersect), Proximity (e.g., Buffer, Near), and Statistics (e.g., Summary Statistics).
 - **Conversion Toolbox**: Convert data formats, such as Feature Class to Shapefile, JSON to Features, or Excel to Table.
 - **Data Management Toolbox**: Manage data, including creating/editing feature classes, managing domains, and appending/merging datasets.
 - **Troubleshooting**: Ensure ArcGIS Pro is licensed for required toolboxes (e.g., Spatial Analyst for raster tools). Verify input data coordinate systems to avoid projection errors.
 
-### 3. Publishing Feature Services to ArcGIS Enterprise
+### 4. Publishing Feature Services to ArcGIS Enterprise
 - **Process**:
   1. **Prepare Data**: Ensure dataset (e.g., feature class in a geodatabase) has a defined coordinate system and no unsupported data types (e.g., complex topologies).
   2. **Share as Web Layer**: In ArcGIS Pro, use **Share as Web Layer**, select **Feature** type, and choose your ArcGIS Enterprise portal.
@@ -157,19 +173,19 @@
   5. **Test**: Verify service in ArcGIS Enterprise portal and add to a web map.
 - **Troubleshooting**: Check portal permissions, ensure ArcGIS Data Store is configured, and validate service URL (e.g., https://yourportal.enterprise.com/server/rest/services/<service_name>/FeatureServer).
 
-### 4. ArcGIS Enterprise Components
+### 5. ArcGIS Enterprise Components
 - **Core Components**: Portal for ArcGIS (web interface), ArcGIS Server (hosting services), ArcGIS Data Store (data management).
 - **Deployment Requirements**: ArcGIS Enterprise 10.8.1 or later for compatibility with apps like Survey123 and Field Maps.
 - **Common Issues**: Ensure components are on the same version. Verify firewall settings for Portal, Server, and Data Store communication.
 
-### 5. GPS Software and Mobile Field Applications
+### 6. GPS Software and Mobile Field Applications
 - **Mobile Apps**:
   - **ArcGIS Field Maps**: Data collection, map viewing, and editing in the field.
   - **ArcGIS Survey123**: Form-based data collection with customizable surveys.
   - **ArcGIS QuickCapture**: Rapid data capture with minimal input.
 - **Integration**: Apps integrate with ArcGIS Enterprise or ArcGIS Online feature services for real-time syncing.
 
-### 6. Integrating ArcGIS Enterprise Point Datasets with Survey123 (via Popup)
+### 7. Integrating ArcGIS Enterprise Point Datasets with Survey123 (via Popup)
 - **Process**:
   1. **Ensure Requirements**:
       - ArcGIS Enterprise 10.8.1 or later.
@@ -205,7 +221,7 @@
 - **Example URL**: arcgis-survey123://?itemID=36ff9e8c13e042a58cfce4ad87f55d19&field:damid={DamID}&center={latitude},{longitude}
 - **Sources**: Esri Community, ArcGIS Survey123 Documentation, GIS Stack Exchange.
 
-### 7. ArcGIS Online Web Maps
+### 8. ArcGIS Online Web Maps
 - **Creating a Web Map**:
   1. Log in to ArcGIS Online, navigate to **Map** tab.
   2. Add layers (e.g., feature services, tiled layers).
@@ -213,18 +229,18 @@
   4. Save and share with appropriate permissions.
 - **Troubleshooting**: Ensure layers share the same audience as the web map. Check for HTTP/HTTPS mixed content issues.
 
-### 8. ArcGIS Arcade Expressions
+### 9. ArcGIS Arcade Expressions
 - **Use Cases**: Dynamic popups, field calculations, or visualizations.
 - **Example**: Concatenate([$feature.Name, " (", $feature.ID, ")"], "")
 - **Troubleshooting**: Test in Arcade editor, ensure referenced fields exist.
 
-### 9. General Troubleshooting Tips
+### 10. General Troubleshooting Tips
 - **Licensing**: Verify ArcGIS Pro or Enterprise licenses.
 - **Data**: Check coordinate systems, supported data types, and valid geometries.
 - **Connectivity**: Ensure ArcGIS Enterprise components are accessible.
 - **Documentation**: Use Esri documentation, Esri Community, or GIS Stack Exchange.
 
-### 10. ArcGIS Pro Overview
+### 11. ArcGIS Pro Overview
 - **Overview**: Professional desktop GIS for data exploration, visualization, analysis, and sharing.
 - **Key Features**:
   - Navigate maps with shortcuts and tools.
@@ -233,51 +249,51 @@
   - Edit features (cities, roads, etc.) in 2D/3D.
 - **Sources**: ArcGIS Pro Resources - Esri.
 
-### 11. Common Troubleshooting in ArcGIS Pro
+### 12. Common Troubleshooting in ArcGIS Pro
 - **Licensing**: Check license level for scripting or tools.
 - **Python/ArcPy**: Ensure correct Python environment.
 - **Geoprocessing**: Verify coordinate systems and geometries.
 - **Sources**: FME and Esri ArcGIS Troubleshooting Guide.
 
-### 12. ArcGIS Online Overview
+### 13. ArcGIS Online Overview
 - **Overview**: Platform for creating and sharing interactive web maps.
 - **Key Features**:
   - Smart mapping and visualization in Map Viewer.
   - Build web apps and perform spatial analysis.
 - **Sources**: ArcGIS Online Resources - Esri.
 
-### 13. ArcGIS Survey123 Details
+### 14. ArcGIS Survey123 Details
 - **Overview**: Form-centric solution for creating, sharing, and analyzing surveys.
 - **Key Features**:
   - Create forms with skip logic and multiple languages.
   - Collect data offline, analyze in ArcGIS apps.
 - **Sources**: ArcGIS Survey123 Resources.
 
-### 14. ArcGIS Field Maps Details
+### 15. ArcGIS Field Maps Details
 - **Overview**: All-in-one app for field data capture, editing, and location reporting.
 - **Key Features**:
   - Works online/offline, supports GNSS receivers.
   - Add tasks to maps for workflows.
 - **Sources**: ArcGIS Field Maps Resources.
 
-### 15. ArcPy Python Scripting
+### 16. ArcPy Python Scripting
 - **Overview**: Python package for geographic data analysis and automation.
 - **Examples**: List feature classes, run Buffer tool.
 - **Troubleshooting**: Check environment and license.
 - **Sources**: Python in ArcGIS Pro.
 
-### 16. Common Errors and Solutions
+### 17. Common Errors and Solutions
 - **General Function Failure**: Check logs and inputs.
 - **Error 999999**: Repair geometry, shorten paths, convert nulls.
 - **Topology Errors**: Ensure valid geometries and snapping.
 - **Sources**: Esri Community, Utility Network error IDs.
 
-### 17. ArcGIS Experience Builder Overview
+### 18. ArcGIS Experience Builder Overview
 - **Overview**: Highly configurable tool for creating web apps and experiences using flexible layouts, content, and widgets that interact with 2D/3D data. No-code/low-code for dashboards, apps, etc.
 - **Key Features**: Widgets (Map, Chart, Table, Embed), triggers/actions for interactivity, mobile optimization, templates (e.g., Dashboard, Blank Fullscreen).
 - **Sources**: https://doc.arcgis.com/en/experience-builder/latest/get-started/what-is-arcgis-experience-builder.htm, https://developers.arcgis.com/experience-builder/.
 
-### 18. Creating a Dashboard in ArcGIS Experience Builder
+### 19. Creating a Dashboard in ArcGIS Experience Builder
 - **Process**:
   1. Log in to ArcGIS Online/Enterprise, go to Experience Builder, click **Create new**.
   2. Choose a template (e.g., Dashboard for map + charts, or Blank Scrolling for multi-sections).
@@ -290,21 +306,21 @@
 - **Example**: Build a housing dashboard with Map (census tracts), Pie Chart (ownership types), and Table (details). Link selections to update views.
 - **Sources**: https://doc.arcgis.com/en/experience-builder/latest/get-started/create-your-first-web-experience.htm, https://doc.arcgis.com/en/experience-builder/latest/configure-widgets/embed-widget.htm.
 
-### 19. Common Esri FAQs and Troubleshooting
+### 20. Common Esri FAQs and Troubleshooting
 - **Licensing**: ArcGIS Pro/Online requires active licenses; check portal for concurrent/single-use. If Manage Licensing button missing, verify admin privileges.
 - **Cost**: ArcGIS Online is subscription-based; check credits for usage. No cost details here—refer to Esri pricing.
 - **Deployment**: Solutions like ArcGIS Solutions are free to deploy but require ArcGIS org account.
 - **Errors**: Error 999999 often from invalid geometry—use Repair Geometry tool. Portal connection fails? Check site URL and firewall.
-- **Access**: E-Learning via Esri Academy; some free, others require purchase or org access.
+- **Access**: E-Learning via Esri Academy; some free, others require purchase or org account.
 - **3D Support**: ArcGIS Knowledge supports 3D in recent versions; check for updates.
 - **Sources**: https://support.esri.com/en-us/knowledge-base, https://doc.arcgis.com/en/arcgis-online/reference/faq.htm, Esri Community.
 
-### 20. ArcGIS Dashboards Integration
+### 21. ArcGIS Dashboards Integration
 - **Overview**: Complementary to Experience Builder for KPI indicators, charts, and real-time data.
 - **Integration**: Create dashboard in ArcGIS Dashboards, embed URL in Experience Builder's Embed widget for hybrid apps.
 - **Sources**: https://doc.arcgis.com/en/dashboards/latest/create-and-share/get-started-with-dashboards.htm.
 
-### 21. Advanced Topics: Custom Widgets and APIs
+### 22. Advanced Topics: Custom Widgets and APIs
 - **Custom Widgets**: Use Developer Edition to build React/JS widgets for Experience Builder.
 - **APIs**: ArcGIS REST APIs for services; ArcPy for scripting.
 - **Sources**: https://developers.arcgis.com/experience-builder/guide/getting-started-widget/, https://developers.arcgis.com/rest/.
@@ -364,14 +380,14 @@
           }
 
           try {
-            const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:doc.arcgis.com OR site:developers.arcgis.com OR site:support.esri.com OR site:community.esri.com')}&num=5`;
+            const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:doc.arcgis.com OR site:developers.arcgis.com OR site:support.esri.com OR site:community.esri.com OR site:gis.stackexchange.com OR site:esri.com')}&num=10`;
             const response = await fetch(searchUrl);
             if (!response.ok) throw new Error(`Search API error: ${response.status} ${response.statusText}`);
             const data = await response.json();
             if (data.items) {
               const result = data.items.map(item => `- **${item.title}**: ${item.snippet} (Source: ${item.link})`).join('\n');
-              localStorage.setItem(cacheKey, result); // Cache for 24 hours
-              setTimeout(() => localStorage.removeItem(cacheKey), 24 * 60 * 60 * 1000); // Expire cache
+              localStorage.setItem(cacheKey, result); // Cache for 7 days
+              setTimeout(() => localStorage.removeItem(cacheKey), 7 * 24 * 60 * 60 * 1000);
               console.log('Search results fetched:', result);
               return result;
             }
@@ -410,16 +426,25 @@
           setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
         } else {
           try {
-            // Skip search for basic GIS questions
+            // Skip search for basic GIS questions, use broader search for exploratory queries
+            const isExploratory = userInput.toLowerCase().includes('ideas') || userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can');
             const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
-            const prompt = `
-              You are Geo-Assist, a professional technical support assistant for Esri GIS products. Respond in a structured format with headings, bullets, examples, and sources. For basic questions like "What is GIS?", prioritize the knowledge base. For advanced or specific queries, use search results if relevant, then supplement with the knowledge base. Cite sources inline (e.g., Esri Documentation, URL). Do not mention AI.
-              Online Search Results: ${searchResults}
-              Knowledge Base: ${esriKnowledgeBase}
-              User Query: ${userInput}
-            `;
+            const prompt = isExploratory
+              ? `
+                You are Geo-Assist, a creative GIS consultant for Esri products. Provide innovative ideas and use cases for ${userInput}, focusing on practical applications with Esri tools. Use a structured format with headings, bullets, examples, and sources. Prioritize the knowledge base for foundational information, then supplement with search results for inspiration. Cite sources inline.
+                Online Search Results: ${searchResults}
+                Knowledge Base: ${esriKnowledgeBase}
+                User Query: ${userInput}
+              `
+              : `
+                You are Geo-Assist, a professional technical support assistant for Esri GIS products. Respond in a structured format with headings, bullets, examples, and sources. For basic questions like "What is GIS?", prioritize the knowledge base. For advanced or specific queries, use search results if relevant, then supplement with the knowledge base. Cite sources inline.
+                Online Search Results: ${searchResults}
+                Knowledge Base: ${esriKnowledgeBase}
+                User Query: ${userInput}
+              `;
             const payload = {
               contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: isExploratory ? { maxOutputTokens: 2000 } : { maxOutputTokens: 500 }
             };
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
@@ -447,11 +472,13 @@
             const searchUrl = `https://doc.arcgis.com/en/search/?q=${encodeURIComponent(userInput)}`;
             let fallbackText = `I'm sorry, I couldn't retrieve a response from the API (Error: ${error.message}). `;
             
-            // Enhanced fallback for basic GIS questions
+            // Enhanced fallback for basic and exploratory queries
             if (userInput.toLowerCase().includes('what is gis')) {
               fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 1\. What is GIS\?[\s\S]*?(?=###|$)/)[0];
             } else if (userInput.toLowerCase().includes('experience builder') && userInput.toLowerCase().includes('dashboard')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 18\. Creating a Dashboard in ArcGIS Experience Builder[\s\S]*?(?=###|$)/)[0];
+              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 19\. Creating a Dashboard in ArcGIS Experience Builder[\s\S]*?(?=###|$)/)[0];
+            } else if (userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can')) {
+              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 2\. GIS Applications and Use Cases[\s\S]*?(?=###|$)/)[0];
             } else {
               fallbackText += `Please check the official [Esri Documentation for "${userInput}"](${searchUrl}) or try rephrasing your question.`;
             }
@@ -562,7 +589,7 @@
                 ref={inputRef}
                 type="text"
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-esriBlue focus:border-transparent transition-all duration-200 disabled:opacity-50"
-                placeholder="Ask a question about Esri..."
+                placeholder="Ask a question about Esri or GIS use cases..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}
