@@ -340,6 +340,24 @@
         setInput('');
         setIsLoading(true);
 
+        // --- NEW LOGIC FOR CONVERSATIONAL PROMPTS ---
+        // A list of conversational prefixes to guide the model.
+        const conversationalPrefixes = [
+          "Explain to me in a detailed, step-by-step way how to ",
+          "Can you give me a thorough guide on ",
+          "I'm trying to figure out the best way to ",
+          "Walk me through the process of ",
+          "I'd like to learn more about how to ",
+          "I need some information about "
+        ];
+        
+        // Pick a random prefix to make the prompt more flexible.
+        const randomPrefix = conversationalPrefixes[Math.floor(Math.random() * conversationalPrefixes.length)];
+        
+        // Combine the conversational prefix with the user's raw input.
+        const enhancedPrompt = `${randomPrefix}${userInput}`;
+        // --- END OF NEW LOGIC ---
+
         let botText = '';
 
         // Fetch ArcGIS REST API metadata
@@ -435,7 +453,7 @@
             const isExploratory = userInput.toLowerCase().includes('ideas') || userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can');
             const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
             
-            // --- UPDATED LOGIC TO PASS CONVERSATION HISTORY ---
+            // --- UPDATED LOGIC TO PASS CONVERSATION HISTORY & ENHANCED PROMPT ---
             const systemInstruction = {
               role: "system",
               parts: [{
@@ -463,7 +481,8 @@
               role: msg.sender === 'user' ? 'user' : 'model',
               parts: [{ text: msg.text }]
             }));
-            chatHistory.push({ role: "user", parts: [{ text: userInput }] });
+            // Use the enhanced prompt here for the model to process
+            chatHistory.push({ role: "user", parts: [{ text: enhancedPrompt }] });
             
             const payload = {
               contents: chatHistory,
@@ -579,67 +598,67 @@
             </div>
             <button
               onClick={() => setShowConfirmModal(true)}
-              className="text-sm text-white hover:text-gray-200 transition-all duration-200"
+              className="p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200"
+              aria-label="Clear chat history"
             >
-              Clear Chat
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.93a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m-1.022.165L6.1 19.673a2.25 2.25 0 0 0 2.244 2.077h4.914a2.25 2.25 0 0 0 2.244-2.077L16.464 5.79m-14.456 0a48.804 48.804 0 0 1-1.018-.135V2.42a1.5 1.5 0 0 1 .636-1.393L3.03 1.096a.75.75 0 0 1 1.06-.102l1.392 1.258a.75.75 0 0 1 .102 1.06L5.356 3.992M2.515 2.457a.75.75 0 0 0-.964 1.157l1.01 1.257m.964-1.157a.75.75 0 0 0 .964 1.157l-1.01 1.257M16.485 2.457a.75.75 0 0 1 .964 1.157l-1.01 1.257m-1.157-.964a.75.75 0 0 1 1.157.964l-1.257-1.01M17.485 2.457a.75.75 0 0 1 .964 1.157l-1.01 1.257m-1.157-.964a.75.75 0 0 1 1.157.964l-1.257-1.01" />
+              </svg>
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 bg-esriGray chat-scroll-container">
-            {messages.length === 0 && (
-              <div className="flex items-center justify-center h-full text-center text-gray-500">
-                <p className="text-lg">Your conversation with Geo-Assist will appear here.</p>
-              </div>
-            )}
-            {messages.map((msg, index) => (
+
+          <div className="flex-1 p-4 overflow-y-auto chat-scroll-container">
+            {messages.map((msg, index) =>
               msg.sender === 'user' ? (
                 <UserMessage key={index} message={msg} />
               ) : (
                 <BotMessage key={index} message={msg} />
               )
-            ))}
+            )}
             {isLoading && (
               <div className="flex items-start mb-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-esriBlue flex items-center justify-center text-white font-bold text-sm mr-2">
                   GA
                 </div>
-                <div className="flex items-center space-x-1 p-3">
-                  <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse-dot"></div>
-                  <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse-dot"></div>
-                  <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse-dot"></div>
+                <div className="flex items-center space-x-1 p-3 rounded-xl bg-esriLightBlue shadow-sm">
+                  <div className="w-2 h-2 rounded-full bg-esriBlue animate-pulse-dot"></div>
+                  <div className="w-2 h-2 rounded-full bg-esriBlue animate-pulse-dot"></div>
+                  <div className="w-2 h-2 rounded-full bg-esriBlue animate-pulse-dot"></div>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={sendMessage} className="p-4 bg-white border-t border-gray-200">
+
+          <form onSubmit={sendMessage} className="p-4 border-t border-gray-200">
             <div className="flex items-center space-x-2">
               <input
                 ref={inputRef}
                 type="text"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-esriBlue focus:border-transparent transition-all duration-200 disabled:opacity-50"
-                placeholder="Ask a question about Esri..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                className="flex-1 px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-esriBlue transition-all"
+                placeholder="Ask me anything about Esri GIS..."
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                className="bg-esriBlue text-white p-3 rounded-full shadow-md hover:bg-opacity-80 transition-all duration-200 disabled:opacity-50"
+                className={`flex-shrink-0 px-6 py-3 rounded-full font-semibold text-white transition-all transform hover:scale-105 active:scale-95 ${
+                  isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-esriBlue hover:bg-esriBlue-600'
+                }`}
                 disabled={isLoading}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                  <path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.985.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z" />
-                </svg>
+                Send
               </button>
             </div>
           </form>
+
           {showConfirmModal && <ConfirmModal />}
         </div>
       );
     };
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
 </html>
