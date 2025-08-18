@@ -86,9 +86,11 @@
       const [showConfirmModal, setShowConfirmModal] = React.useState(false);
       const messagesEndRef = React.useRef(null);
       const inputRef = React.useRef(null);
-      const apiKey = "AIzaSyADvIoS1NcspmkXp3sHYrD38zhh1DlBXAM"; // Replace with your Google API key
-      const model = "gemini-1.5-flash"; // Stable model
-      const cx = "25ed03fb10e654c08"; // Replace with your Google CSE ID
+      // NOTE: For live GitHub usage, you need to replace this with your actual API key
+      const apiKey = "AIzaSyADvIoS1NcspmkXp3sHYrD38zhh1DlBXAM"; 
+      const model = "gemini-2.5-flash-preview-05-20"; // Updated to a stable model for conversation
+      // NOTE: For live GitHub usage, you need to replace this with your actual Google CSE ID
+      const cx = "25ed03fb10e654c08"; 
 
       // Load stored messages or initial welcome
       React.useEffect(() => {
@@ -331,7 +333,10 @@
         if (input.trim() === '' || isLoading) return;
 
         const userInput = input.trim();
-        setMessages((curr) => [...curr, { text: userInput, sender: 'user' }]);
+        const newUserMessage = { text: userInput, sender: 'user' };
+        
+        // Add user message to history and update UI
+        setMessages((curr) => [...curr, newUserMessage]);
         setInput('');
         setIsLoading(true);
 
@@ -423,33 +428,54 @@
           } else {
             botText = 'Please provide a valid ArcGIS service URL, e.g., "What are the layers in this service: https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer"';
           }
-          setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
+          const newBotMessage = { text: botText, sender: 'bot' };
+          setMessages((curr) => [...curr, newBotMessage]);
         } else {
           try {
-            // Skip search for basic GIS questions, use broader search for exploratory queries
             const isExploratory = userInput.toLowerCase().includes('ideas') || userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can');
             const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
-            const prompt = isExploratory
-              ? `
-                You are Geo-Assist, a creative GIS consultant for Esri products. Provide innovative ideas and use cases for ${userInput}, focusing on practical applications with Esri tools. Use a structured format with headings, bullets, examples, and sources. Prioritize the knowledge base for foundational information, then supplement with search results for inspiration. Cite sources inline. Do not mention AI.
-                Online Search Results: ${searchResults}
-                Knowledge Base: ${esriKnowledgeBase}
-                User Query: ${userInput}
-              `
-              : `
-                You are Geo-Assist, a professional technical support assistant for Esri GIS products. Respond in a structured format with headings, bullets, examples, and sources. For basic questions like "What is GIS?", prioritize the knowledge base. For advanced or specific queries, use search results if relevant, then supplement with the knowledge base. Cite sources inline. Do not mention AI.
-                Online Search Results: ${searchResults}
-                Knowledge Base: ${esriKnowledgeBase}
-                User Query: ${userInput}
-              `;
+            
+            // --- UPDATED LOGIC TO PASS CONVERSATION HISTORY ---
+            const systemInstruction = {
+              role: "system",
+              parts: [{
+                text: `You are Geo-Assist, a professional technical support assistant for Esri GIS products. Your purpose is to provide helpful, accurate, and structured information to users. 
+                
+                Knowledge Base:
+                ${esriKnowledgeBase}
+                
+                Online Search Results (for up-to-date or specific queries):
+                ${searchResults}
+
+                Instructions:
+                - Use a professional, friendly, and structured format.
+                - Prioritize information from the knowledge base first for foundational questions.
+                - Use online search results to supplement or answer more advanced queries.
+                - Always cite sources (Knowledge Base or Online Search) inline.
+                - Do not mention that you are an AI or bot.
+                - Maintain the persona of a helpful, knowledgeable Esri technical expert.
+                - Remember the full conversation history to provide contextual and relevant answers.
+                `
+              }]
+            };
+
+            const chatHistory = messages.map(msg => ({
+              role: msg.sender === 'user' ? 'user' : 'model',
+              parts: [{ text: msg.text }]
+            }));
+            chatHistory.push({ role: "user", parts: [{ text: userInput }] });
+            
             const payload = {
-              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              contents: chatHistory,
+              // Use the system instruction to guide the model's behavior
+              systemInstruction: systemInstruction,
               generationConfig: isExploratory ? { maxOutputTokens: 2000 } : { maxOutputTokens: 500 }
             };
+            
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
             const apiCall = async () => {
-              console.log('Sending API request to:', apiUrl);
+              console.log('Sending API request with conversation history to:', apiUrl);
               const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -466,13 +492,14 @@
             };
             
             botText = await callApiWithBackoff(apiCall);
-            setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
+            const newBotMessage = { text: botText, sender: 'bot' };
+            setMessages((curr) => [...curr, newBotMessage]);
+            
           } catch (error) {
             console.error('API call failed:', error);
             const searchUrl = `https://doc.arcgis.com/en/search/?q=${encodeURIComponent(userInput)}`;
             let fallbackText = `I'm sorry, I couldn't retrieve a response from the API (Error: ${error.message}). `;
             
-            // Enhanced fallback for basic and exploratory queries
             if (userInput.toLowerCase().includes('what is gis')) {
               fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 1\. What is GIS\?[\s\S]*?(?=###|$)/)[0];
             } else if (userInput.toLowerCase().includes('experience builder') && userInput.toLowerCase().includes('dashboard')) {
@@ -483,7 +510,8 @@
               fallbackText += `Please check the official [Esri Documentation for "${userInput}"](${searchUrl}) or try rephrasing your question.`;
             }
             botText = fallbackText;
-            setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
+            const newBotMessage = { text: botText, sender: 'bot' };
+            setMessages((curr) => [...curr, newBotMessage]);
           }
         }
         setIsLoading(false);
@@ -589,7 +617,7 @@
                 ref={inputRef}
                 type="text"
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-esriBlue focus:border-transparent transition-all duration-200 disabled:opacity-50"
-                placeholder="Ask a question about Esri or GIS use cases..."
+                placeholder="Ask a question about Esri..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}
