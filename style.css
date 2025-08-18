@@ -1,74 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+
 body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: #f4f6f8;
-  margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
-#chat-container {
-  width: 400px;
-  height: 600px;
-  background: #fff;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  overflow: hidden;
+/* Loading dots animation */
+.animate-pulse-dot {
+  animation: pulse-dot 1.4s infinite ease-in-out both;
+}
+.animate-pulse-dot:nth-child(1) { animation-delay: -0.32s; }
+.animate-pulse-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes pulse-dot {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
 }
 
-#chat-header {
-  background: #0078d4;
-  color: white;
-  padding: 12px;
-  font-weight: bold;
-  text-align: center;
-}
+/* Scrollbar styling */
+.chat-scroll-container::-webkit-scrollbar { width: 8px; }
+.chat-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+.chat-scroll-container::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+.chat-scroll-container::-webkit-scrollbar-thumb:hover { background: #555; }
 
-#chat-messages {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.message {
-  margin: 5px 0;
-  padding: 8px 12px;
-  border-radius: 12px;
-  max-width: 80%;
-  line-height: 1.4;
-}
-
-.user-message {
-  background: #0078d4;
-  color: white;
-  align-self: flex-end;
-}
-
-.bot-message {
-  background: #eaeaea;
-  align-self: flex-start;
-}
-
-#chat-input-container {
-  display: flex;
-  border-top: 1px solid #ddd;
-}
-
-#chat-input {
-  flex: 1;
-  border: none;
-  padding: 10px;
-  font-size: 14px;
-  outline: none;
-}
-
-#chat-send {
-  background: #0078d4;
+/* Markdown styling */
+.markdown-content ul { list-style-type: disc; margin-left: 1.2rem; margin-bottom: 0.5rem; }
+.markdown-content ol { list-style-type: decimal; margin-left: 1.2rem; margin-bottom: 0.5rem; }
+.markdown-content strong { font-weight: 600; }
+.markdown-content h1, .markdown-content h2, .markdown-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
+.markdown-content a { color: #005995; text-decoration: underline; }
+.markdown-content pre { background-color: #e2e8f0; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; }
   border: none;
   color: white;
   padding: 0 20px;
