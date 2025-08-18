@@ -26,8 +26,8 @@ body {
 .markdown-content ol { list-style-type: decimal; margin-left: 1.2rem; margin-bottom: 0.5rem; }
 .markdown-content strong { font-weight: 600; }
 .markdown-content h1, .markdown-content h2, .markdown-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
-.markdown-content a { color: #005995; text-decoration: underline; }
-.markdown-content pre { background-color: #e2e8f0; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; }
+.markdown-content a { color: #292b47; text-decoration: underline; }
+.markdown-content pre { background-color: #9495a8; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; }
   border: none;
   color: white;
   padding: 0 20px;
