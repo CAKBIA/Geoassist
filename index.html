@@ -3,18 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chatbot</title>
+  <title>Esri GIS Technical Support</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- External CSS -->
   <link rel="stylesheet" href="style.css" />
+  
+  <!-- React, ReactDOM, Marked, and DOMPurify -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
+  
+  <!-- External JavaScript -->
+  <script src="script.js" type="text/babel"></script>
 </head>
-<body>
-  <div id="chat-container">
-    <div id="chat-header">💬 My Chatbot</div>
-    <div id="chat-messages"></div>
-    <div id="chat-input-container">
-      <input type="text" id="chat-input" placeholder="Type your message..." />
-      <button id="chat-send">Send</button>
-    </div>
-  </div>
-  <script src="script.js"></script>
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
+  <div id="root" class="w-full max-w-2xl h-[90vh] flex flex-col"></div>
 </body>
 </html>
