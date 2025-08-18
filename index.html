@@ -45,6 +45,10 @@
     }
 
     /* Scrollbar styling */
+    .chat-scroll-container {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
     .chat-scroll-container::-webkit-scrollbar { width: 8px; }
     .chat-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
     .chat-scroll-container::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
@@ -64,20 +68,22 @@
   <div id="root" class="w-full max-w-2xl h-[90vh] flex flex-col"></div>
 
   <!-- React, ReactDOM, Marked, and DOMPurify (Production Builds) -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" defer></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/lib/marked.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js" defer></script>
 
   <script type="text/babel">
-    // Check for marked.js and DOMPurify availability
-    if (typeof marked === 'undefined') {
-      console.error('Marked.js failed to load. Falling back to plain text.');
-    }
-    if (typeof DOMPurify === 'undefined') {
-      console.error('DOMPurify failed to load. Markdown sanitization disabled.');
-    }
+    // Check for dependencies
+    window.addEventListener('load', () => {
+      if (typeof marked === 'undefined') {
+        console.error('Marked.js failed to load. Falling back to plain text.');
+      }
+      if (typeof DOMPurify === 'undefined') {
+        console.error('DOMPurify failed to load. Markdown sanitization disabled.');
+      }
+    });
 
     const App = () => {
       const [messages, setMessages] = React.useState([]);
@@ -86,18 +92,16 @@
       const [showConfirmModal, setShowConfirmModal] = React.useState(false);
       const messagesEndRef = React.useRef(null);
       const inputRef = React.useRef(null);
-      // Replace with your actual Google API key (securely in production)
-      const apiKey = "AIzaSyADvIoS1NcspmkXp3sHYrD38zhh1DlBXAM";
-      const model = "gemini-1.5-pro"; // Stable model
-      // Replace with your actual Google CSE ID
-      const cx = "25ed03fb10e654c08";
+      const apiKey = "YOUR_GOOGLE_API_KEY"; // Replace with your Google API key
+      const cx = "YOUR_CSE_ID"; // Replace with your Google CSE ID
+      const model = "gemini-1.5-pro";
 
-      // Load stored messages or initial welcome
+      // Load stored messages
       React.useEffect(() => {
         try {
           const storedMessages = JSON.parse(localStorage.getItem('esriChatMessages') || '[]');
           setMessages(storedMessages.length > 0 ? storedMessages : [
-            { text: 'Hello! I\'m Geo-Assist, your dedicated helper for all things Esri GIS. Ask me about GIS tools, troubleshooting, or creative use cases!', sender: 'bot' }
+            { text: 'Hello! I\'m Geo-Assist, your Esri GIS helper. Ask about GIS tools, troubleshooting, or use cases!', sender: 'bot' }
           ]);
         } catch (e) {
           console.error('Failed to load messages from localStorage:', e);
@@ -109,14 +113,14 @@
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
-      // Focus input after loading
+      // Focus input
       React.useEffect(() => {
         if (!isLoading && inputRef.current) {
           inputRef.current.focus();
         }
       }, [isLoading]);
 
-      // Persist messages to localStorage
+      // Persist messages
       React.useEffect(() => {
         try {
           localStorage.setItem('esriChatMessages', JSON.stringify(messages));
@@ -125,230 +129,57 @@
         }
       }, [messages]);
 
-      // Expanded Knowledge base with GIS applications
-      const esriKnowledgeBase = `
-## Esri GIS Technical Support Knowledge Base
-
+      // Modular Knowledge Base
+      const esriKnowledgeBase = {
+        whatIsGis: `
 ### 1. What is GIS?
-- **Definition**: A Geographic Information System (GIS) is a framework for capturing, storing, managing, analyzing, and visualizing spatial and geographic data. It integrates data like maps, satellite imagery, and attributes (e.g., population, temperature) to reveal patterns and trends.
-- **Components**:
-  - **Data**: Spatial (points, lines, polygons) and attribute data.
-  - **Software**: Tools like ArcGIS Pro, ArcGIS Online, or QGIS.
-  - **Hardware**: Computers or servers for GIS processing.
-  - **People**: Analysts or planners who use GIS.
-  - **Methods**: Techniques like buffering, overlay, or spatial statistics.
-- **Examples**:
-  - Mapping flood zones for emergency planning.
-  - Analyzing traffic for road optimization.
-  - Visualizing demographic data for urban planning.
-- **Esri Context**: Esri’s ArcGIS platform includes ArcGIS Pro (desktop), ArcGIS Online (web), and apps like Experience Builder for interactive apps.
-- **Sources**: Esri Documentation (https://www.esri.com/en-us/what-is-gis/overview).
-
-### 2. GIS Applications and Use Cases
-- **Urban Planning**:
-  - **Land Use Analysis**: Combine zoning and demographic data with overlay tools for development planning.
-  - **Transportation**: Analyze traffic patterns using ArcGIS Network Analyst.
-  - **Community Engagement**: Create public-facing dashboards in ArcGIS Experience Builder.
-  - Example: Map affordable housing zones and visualize in a web app.
-- **Environmental Management**:
-  - **Conservation**: Map wildlife habitats and assess impacts using ArcGIS Pro.
-  - **Climate Analysis**: Visualize urban heat islands with raster analysis.
-  - Example: Create a web map of green spaces for conservation planning.
-- **Business and Finance**:
-  - **Site Selection**: Analyze customer demographics and proximity for branch locations (e.g., credit unions).
-  - **Market Analysis**: Use ArcGIS Business Analyst for demographic insights.
-  - Example: Map credit union branches to optimize service coverage.
-- **Sources**: Esri Urban Planning Solutions (https://www.esri.com/en-us/industries/urban-planning/overview), Esri Business Analyst (https://www.esri.com/en-us/arcgis/products/arcgis-business-analyst).
-
-### 3. Geoprocessing Tools in ArcGIS Pro
-- **Analysis Toolbox**: Tools for spatial analysis, including Overlay (e.g., Union, Intersect), Proximity (e.g., Buffer, Near), and Statistics (e.g., Summary Statistics).
-- **Conversion Toolbox**: Convert data formats, such as Feature Class to Shapefile, JSON to Features, or Excel to Table.
-- **Data Management Toolbox**: Manage data, including creating/editing feature classes, managing domains, and appending/merging datasets.
-- **Troubleshooting**: Ensure ArcGIS Pro is licensed for required toolboxes (e.g., Spatial Analyst for raster tools). Verify input data coordinate systems to avoid projection errors.
-
-### 4. Publishing Feature Services to ArcGIS Enterprise
-- **Process**:
-  1. **Prepare Data**: Ensure dataset (e.g., feature class in a geodatabase) has a defined coordinate system and no unsupported data types (e.g., complex topologies).
-  2. **Share as Web Layer**: In ArcGIS Pro, use **Share as Web Layer**, select **Feature** type, and choose your ArcGIS Enterprise portal.
-  3. **Configure Settings**: Enable editing, querying, or syncing; set sharing permissions (e.g., organization, public).
-  4. **Publish**: Analyze for errors (e.g., missing fields) and publish.
-  5. **Test**: Verify service in ArcGIS Enterprise portal and add to a web map.
-- **Troubleshooting**: Check portal permissions, ensure ArcGIS Data Store is configured, and validate service URL (e.g., https://yourportal.enterprise.com/server/rest/services/<service_name>/FeatureServer).
-
-### 5. ArcGIS Enterprise Components
-- **Core Components**: Portal for ArcGIS (web interface), ArcGIS Server (hosting services), ArcGIS Data Store (data management).
-- **Deployment Requirements**: ArcGIS Enterprise 10.8.1 or later for compatibility with apps like Survey123 and Field Maps.
-- **Common Issues**: Ensure components are on the same version. Verify firewall settings for Portal, Server, and Data Store communication.
-
-### 6. GPS Software and Mobile Field Applications
-- **Mobile Apps**:
-  - **ArcGIS Field Maps**: Data collection, map viewing, and editing in the field.
-  - **ArcGIS Survey123**: Form-based data collection with customizable surveys.
-  - **ArcGIS QuickCapture**: Rapid data capture with minimal input.
-- **Integration**: Apps integrate with ArcGIS Enterprise or ArcGIS Online feature services for real-time syncing.
-
-### 7. Integrating ArcGIS Enterprise Point Datasets with Survey123 (via Popup)
-- **Process**:
-  1. **Ensure Requirements**:
-      - ArcGIS Enterprise 10.8.1 or later.
-      - Point dataset published as a feature service and included in the web map.
-      - Survey123 form published to your ArcGIS Enterprise portal (note itemID, e.g., https://yourportal.enterprise.com/home/item.html?id=36ff9e8c13e042a58cfce4ad87f55d19).
-  2. **Identify Fields (Optional)**:
-      - Use a unique identifier (e.g., GUID) to link features to survey submissions.
-      - Match Survey123 form field names (from XLSForm) to point dataset attributes.
-  3. **Configure Popup**:
-      - Open web map in Map Viewer, select point dataset layer, and configure **Pop-ups**.
-      - Add a custom link: **Add content** > **Text**, e.g., "Open Survey123 Form".
-      - Use URL formats:
-        - Field App: arcgis-survey123://?itemID=<your_form_itemID>
-        - Web App: https://survey123.arcgis.com/share/<your_form_itemID>
-        - Example: arcgis-survey123://?itemID=36ff9e8c13e042a58cfce4ad87f55d19
-      - Prepopulate fields: &field:<survey_field_name>={<feature_attribute>}, e.g., &field:damid={DamID}.
-  4. **Test Popup**:
-      - Save web map, test in Map Viewer or apps (e.g., ArcGIS Field Maps).
-      - Troubleshoot: Verify itemID, field names (case-sensitive), and attribute references.
-  5. **Enhance Popup (Optional)**:
-      - Use HTML: <a href="arcgis-survey123://?itemID=36ff9e8c13e042a58cfce4ad87f55d19">Open Survey</a>.
-      - Use Arcade for dynamic URLs or related tables.
-  6. **Save and Share**:
-      - Share web map with appropriate users/groups.
-      - Ensure users have access to the form and field app.
-  7. **Enterprise Considerations**:
-      - Add portalUrl: arcgis-survey123://?itemID=<itemID>&portalUrl=https://yourportal.enterprise.com.
-      - Verify user roles and permissions.
-  8. **Troubleshooting**:
-      - Link issues: Ensure field app is installed or use web app URL.
-      - Prepopulation issues: Check field names and attributes.
-      - Android/iOS: Use https://survey123.arcgis.app.
-- **Example URL**: arcgis-survey123://?itemID=36ff9e8c13e042a58cfce4ad87f55d19&field:damid={DamID}&center={latitude},{longitude}
-- **Sources**: Esri Community, ArcGIS Survey123 Documentation, GIS Stack Exchange.
-
-### 8. ArcGIS Online Web Maps
-- **Creating a Web Map**:
-  1. Log in to ArcGIS Online, navigate to **Map** tab.
-  2. Add layers (e.g., feature services, tiled layers).
-  3. Configure popups, symbology, and filters.
-  4. Save and share with appropriate permissions.
-- **Troubleshooting**: Ensure layers share the same audience as the web map. Check for HTTP/HTTPS mixed content issues.
-
-### 9. ArcGIS Arcade Expressions
-- **Use Cases**: Dynamic popups, field calculations, or visualizations.
-- **Example**: Concatenate([$feature.Name, " (", $feature.ID, ")"], "")
-- **Troubleshooting**: Test in Arcade editor, ensure referenced fields exist.
-
-### 10. General Troubleshooting Tips
-- **Licensing**: Verify ArcGIS Pro or Enterprise licenses.
-- **Data**: Check coordinate systems, supported data types, and valid geometries.
-- **Connectivity**: Ensure ArcGIS Enterprise components are accessible.
-- **Documentation**: Use Esri documentation, Esri Community, or GIS Stack Exchange.
-
-### 11. ArcGIS Pro Overview
-- **Overview**: Professional desktop GIS for data exploration, visualization, analysis, and sharing.
-- **Key Features**:
-  - Navigate maps with shortcuts and tools.
-  - Author maps with labels, symbols, and pop-ups.
-  - Geoprocessing for spatial analysis and data management.
-  - Edit features (cities, roads, etc.) in 2D/3D.
-- **Sources**: ArcGIS Pro Resources - Esri.
-
-### 12. Common Troubleshooting in ArcGIS Pro
-- **Licensing**: Check license level for scripting or tools.
-- **Python/ArcPy**: Ensure correct Python environment.
-- **Geoprocessing**: Verify coordinate systems and geometries.
-- **Sources**: FME and Esri ArcGIS Troubleshooting Guide.
-
-### 13. ArcGIS Online Overview
-- **Overview**: Platform for creating and sharing interactive web maps.
-- **Key Features**:
-  - Smart mapping and visualization in Map Viewer.
-  - Build web apps and perform spatial analysis.
-- **Sources**: ArcGIS Online Resources - Esri.
-
-### 14. ArcGIS Survey123 Details
-- **Overview**: Form-centric solution for creating, sharing, and analyzing surveys.
-- **Key Features**:
-  - Create forms with skip logic and multiple languages.
-  - Collect data offline, analyze in ArcGIS apps.
-- **Sources**: ArcGIS Survey123 Resources.
-
-### 15. ArcGIS Field Maps Details
-- **Overview**: All-in-one app for field data capture, editing, and location reporting.
-- **Key Features**:
-  - Works online/offline, supports GNSS receivers.
-  - Add tasks to maps for workflows.
-- **Sources**: ArcGIS Field Maps Resources.
-
-### 16. ArcPy Python Scripting
-- **Overview**: Python package for geographic data analysis and automation.
-- **Examples**: List feature classes, run Buffer tool.
-- **Troubleshooting**: Check environment and license.
-- **Sources**: Python in ArcGIS Pro.
-
-### 17. Common Errors and Solutions
-- **General Function Failure**: Check logs and inputs.
-- **Error 999999**: Repair geometry, shorten paths, convert nulls.
-- **Topology Errors**: Ensure valid geometries and snapping.
-- **Sources**: Esri Community, Utility Network error IDs.
-
-### 18. ArcGIS Experience Builder Overview
-- **Overview**: Highly configurable tool for creating web apps and experiences using flexible layouts, content, and widgets that interact with 2D/3D data. No-code/low-code for dashboards, apps, etc.
-- **Key Features**: Widgets (Map, Chart, Table, Embed), triggers/actions for interactivity, mobile optimization, templates (e.g., Dashboard, Blank Fullscreen).
-- **Sources**: https://doc.arcgis.com/en/experience-builder/latest/get-started/what-is-arcgis-experience-builder.htm, https://developers.arcgis.com/experience-builder/.
-
-### 19. Creating a Dashboard in ArcGIS Experience Builder
-- **Process**:
-  1. Log in to ArcGIS Online/Enterprise, go to Experience Builder, click **Create new**.
-  2. Choose a template (e.g., Dashboard for map + charts, or Blank Scrolling for multi-sections).
-  3. Add widgets: Drag Map widget and link to a web map; add Chart/Table for data viz; use Embed for external content like ArcGIS Dashboards.
-  4. Configure interactivity: Use Actions tab to link widgets (e.g., select in table pans map, filters update charts).
-  5. Add dynamic content: Use Text widget for indicators, or embed from ArcGIS Dashboards for advanced filtering.
-  6. Optimize for mobile: Test in Live View, adjust layouts.
-  7. Publish and share: Set permissions, get URL.
-- **Troubleshooting**: For dynamic filtering limitations, embed ArcGIS Dashboards. Ensure data sources are shared.
-- **Example**: Build a housing dashboard with Map (census tracts), Pie Chart (ownership types), and Table (details). Link selections to update views.
-- **Sources**: https://doc.arcgis.com/en/experience-builder/latest/get-started/create-your-first-web-experience.htm, https://doc.arcgis.com/en/experience-builder/latest/configure-widgets/embed-widget.htm.
-
-### 20. Common Esri FAQs and Troubleshooting
-- **Licensing**: ArcGIS Pro/Online requires active licenses; check portal for concurrent/single-use. If Manage Licensing button missing, verify admin privileges.
-- **Cost**: ArcGIS Online is subscription-based; check credits for usage. No cost details here—refer to Esri pricing.
-- **Deployment**: Solutions like ArcGIS Solutions are free to deploy but require ArcGIS org account.
-- **Errors**: Error 999999 often from invalid geometry—use Repair Geometry tool. Portal connection fails? Check site URL and firewall.
-- **Access**: E-Learning via Esri Academy; some free, others require purchase or org account.
-- **3D Support**: ArcGIS Knowledge supports 3D in recent versions; check for updates.
-- **Sources**: https://support.esri.com/en-us/knowledge-base, https://doc.arcgis.com/en/arcgis-online/reference/faq.htm, Esri Community.
-
-### 21. ArcGIS Dashboards Integration
-- **Overview**: Complementary to Experience Builder for KPI indicators, charts, and real-time data.
-- **Integration**: Create dashboard in ArcGIS Dashboards, embed URL in Experience Builder's Embed widget for hybrid apps.
-- **Sources**: https://doc.arcgis.com/en/dashboards/latest/create-and-share/get-started-with-dashboards.htm.
-
-### 22. Advanced Topics: Custom Widgets and APIs
-- **Custom Widgets**: Use Developer Edition to build React/JS widgets for Experience Builder.
-- **APIs**: ArcGIS REST APIs for services; ArcPy for scripting.
-- **Sources**: https://developers.arcgis.com/experience-builder/guide/getting-started-widget/, https://developers.arcgis.com/rest/.
-
+- **Definition**: A Geographic Information System (GIS) captures, stores, manages, analyzes, and visualizes spatial data.
+- **Components**: Spatial data, software (e.g., ArcGIS Pro), hardware, people, methods (e.g., buffering).
+- **Examples**: Flood zone mapping, traffic analysis, urban planning.
+- **Source**: Esri Documentation (https://www.esri.com/en-us/what-is-gis/overview).
+        `.trim(),
+        gisApplications: `
+### 2. GIS Applications
+- **Urban Planning**: Zoning analysis, transportation planning, dashboards.
+- **Environmental**: Wildlife mapping, climate analysis.
+- **Business**: Site selection, market analysis.
+- **Source**: Esri Solutions (https://www.esri.com/en-us/industries).
+        `.trim(),
+        mineralExploration: `
 ### 23. ArcGIS for Mineral Exploration
-- **Overview**: ArcGIS supports mining engineers by analyzing geological, geophysical, and geochemical data to identify drilling locations.
-- **Key Tools**:
-  - **ArcGIS Pro**: Use Spatial Analyst for suitability modeling, 3D Analyst for subsurface visualization.
-  - **ArcGIS Online**: Share exploration maps with teams.
-  - **Field Maps/Survey123**: Collect field data (e.g., core samples, GPS points).
+- **Overview**: Analyze geological data for drilling locations.
+- **Tools**: ArcGIS Pro (Spatial Analyst, 3D Analyst), ArcGIS Online, Field Maps.
 - **Workflow**:
-  1. Import geological data (e.g., mineral deposits, faults) into ArcGIS Pro.
-  2. Use Weighted Overlay to rank drilling sites based on mineral potential, accessibility, and environmental factors.
-  3. Visualize results in a 3D scene or web map.
-  4. Deploy Field Maps for navigation to drilling sites.
-- **Example**: Map gold deposits in Nevada, weight by assay data, and create a dashboard for exploration planning.
-- **Sources**: Esri Mining Solutions (https://www.esri.com/en-us/industries/mining/overview), GIS Stack Exchange.
-      `.trim();
+  1. Import geological data.
+  2. Use Weighted Overlay for site ranking.
+  3. Visualize in 3D or web maps.
+  4. Deploy Field Maps.
+- **Example**: Map gold deposits in Nevada.
+- **Source**: Esri Mining (https://www.esri.com/en-us/industries/mining).
+        `.trim(),
+        advancedGeoprocessing: `
+### 24. Advanced Geoprocessing
+- **Tools**: Overlay (Union, Intersect), Proximity (Buffer), Spatial Analyst (raster).
+- **Use Case**: Combine datasets for suitability analysis (e.g., land use planning).
+- **Troubleshooting**: Check licensing, coordinate systems, geometry validity.
+- **Source**: ArcGIS Pro Docs (https://pro.arcgis.com/en/pro-app/latest/tool-reference).
+        `.trim()
+      };
+
+      const getRelevantKB = (query) => {
+        if (query.toLowerCase().includes('what is gis')) return esriKnowledgeBase.whatIsGis;
+        if (query.toLowerCase().includes('use cases') || query.toLowerCase().includes('how can')) return esriKnowledgeBase.gisApplications;
+        if (query.toLowerCase().includes('mining') || query.toLowerCase().includes('mineral exploration')) return esriKnowledgeBase.mineralExploration;
+        if (query.toLowerCase().includes('geoprocessing') || query.toLowerCase().includes('spatial analysis')) return esriKnowledgeBase.advancedGeoprocessing;
+        return Object.values(esriKnowledgeBase).join('\n\n');
+      };
 
       const sendMessage = async (e) => {
         e.preventDefault();
         if (input.trim() === '' || isLoading) return;
 
         const userInput = input.trim();
-        const newUserMessage = { text: userInput, sender: 'user' };
-        setMessages((curr) => [...curr, newUserMessage]);
+        setMessages((curr) => [...curr, { text: userInput, sender: 'user' }]);
         setInput('');
         setIsLoading(true);
 
@@ -357,75 +188,47 @@
         const fetchServiceMetadata = async (url) => {
           try {
             if (!url.includes('arcgis') || !url.match(/\/rest\/services\/[^/]+\/(MapServer|FeatureServer)/)) {
-              return 'Please provide a valid ArcGIS REST service URL (e.g., ending in /MapServer or /FeatureServer).';
+              return 'Please provide a valid ArcGIS REST service URL.';
             }
             const response = await fetch(`${url}?f=json`, { signal: AbortSignal.timeout(5000) });
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            let metadata = `**Service Metadata for:** ${data.name || data.documentInfo?.Title || 'Untitled Service'}\n\n`;
-            if (data.description) metadata += `- **Description**: ${data.description}\n`;
-            if (data.serviceDataType) metadata += `- **Data Type**: ${data.serviceDataType}\n`;
-            if (data.layers) {
-              metadata += `\n**Layers**:\n`;
-              data.layers.forEach((layer) => {
-                metadata += `- **${layer.name}** (ID: ${layer.id})\n`;
-              });
-            } else if (data.fields) {
-              metadata += `\n**Fields**:\n`;
-              data.fields.forEach((field) => {
-                metadata += `- **${field.name}** (Type: ${field.type})\n`;
-              });
-            } else {
-              metadata += `\n*No detailed layer or field information available.*\n`;
-            }
-            return metadata;
+            return `**Service Metadata**: ${data.name || 'Untitled'}\n- Description: ${data.description || 'N/A'}\n- Layers: ${data.layers?.map(l => l.name).join(', ') || 'N/A'}`;
           } catch (error) {
-            console.error('Failed to fetch metadata:', error);
-            return `Failed to retrieve metadata for ${url}. Ensure the URL is a valid, accessible ArcGIS REST service. Error: ${error.message}`;
+            return `Failed to fetch metadata: ${error.message}`;
           }
         };
 
         const fetchEsriSearchResults = async (query) => {
           const cacheKey = `esri_search_${query}`;
           const cached = localStorage.getItem(cacheKey);
-          if (cached) {
-            console.log('Using cached search results for:', query);
-            return cached;
-          }
+          if (cached) return cached;
           try {
-            const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:doc.arcgis.com OR site:developers.arcgis.com OR site:support.esri.com OR site:community.esri.com OR site:gis.stackexchange.com OR site:esri.com')}&num=10`;
+            const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:*.esri.com')}&num=5`;
             const response = await fetch(searchUrl);
-            if (!response.ok) throw new Error(`Search API error: ${response.status} ${response.statusText}`);
+            if (!response.ok) throw new Error(`Search API error: ${response.status}`);
             const data = await response.json();
-            if (data.items) {
-              const result = data.items.map(item => `- **${item.title}**: ${item.snippet} (Source: ${item.link})`).join('\n');
-              localStorage.setItem(cacheKey, result);
-              setTimeout(() => localStorage.removeItem(cacheKey), 7 * 24 * 60 * 60 * 1000);
-              console.log('Search results fetched:', result);
-              return result;
-            }
-            console.log('No search results found for:', query);
-            return 'No search results found.';
+            const result = data.items?.map(item => `- **${item.title}**: ${item.snippet} ([Source](${item.link}))`).join('\n') || 'No search results.';
+            localStorage.setItem(cacheKey, result);
+            setTimeout(() => localStorage.removeItem(cacheKey), 30 * 24 * 60 * 60 * 1000);
+            return result;
           } catch (error) {
-            console.error('Search failed:', error);
-            return `Search failed: ${error.message}. Falling back to static knowledge.`;
+            return `Search failed: ${error.message}`;
           }
         };
 
         let lastRequestTime = 0;
         const minRequestInterval = 1000;
-        const callApiWithBackoff = async (apiCall, retries = 5, delay = 1000) => {
+        const callApiWithBackoff = async (apiCall, retries = 3, delay = 1000) => {
           const now = Date.now();
           if (now - lastRequestTime < minRequestInterval) {
             await new Promise(res => setTimeout(res, minRequestInterval - (now - lastRequestTime)));
           }
-          lastRequestTime = Date.now();
+          lastRequestTime = now;
           try {
             return await apiCall();
           } catch (error) {
-            console.error('API call attempt failed:', error);
             if (retries > 0 && (error.message.includes('429') || error.message.includes('timeout'))) {
-              console.log(`Retrying API call, ${retries} retries left, waiting ${delay}ms`);
               await new Promise(res => setTimeout(res, delay));
               return callApiWithBackoff(apiCall, retries - 1, delay * 2);
             }
@@ -433,106 +236,60 @@
           }
         };
 
-        if (userInput.toLowerCase().includes('service url') || userInput.toLowerCase().includes('rest api') || userInput.match(/https?:\/\//)) {
+        if (userInput.match(/https?:\/\//)) {
           const urlMatch = userInput.match(/https?:\/\/[^\s]+/);
-          if (urlMatch) {
-            botText = await fetchServiceMetadata(urlMatch[0]);
-          } else {
-            botText = 'Please provide a valid ArcGIS service URL, e.g., "What are the layers in this service: https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer"';
-          }
+          botText = urlMatch ? await fetchServiceMetadata(urlMatch[0]) : 'Please provide a valid ArcGIS service URL.';
           setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
-        } else {
-          try {
-            const isExploratory = userInput.toLowerCase().includes('ideas') || userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can');
-            const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
-            const systemInstruction = {
-              role: "system",
-              parts: [{
-                text: `You are Geo-Assist, a professional technical support assistant for Esri GIS products. Your purpose is to provide helpful, accurate, and structured information to users. 
-                Knowledge Base: ${esriKnowledgeBase}
-                Online Search Results: ${searchResults}
-                Instructions:
-                - Use a professional, friendly, and structured format.
-                - Prioritize information from the knowledge base first for foundational questions.
-                - Use online search results to supplement or answer more advanced queries.
-                - Always cite sources (Knowledge Base or Online Search) inline.
-                - Do not mention that you are an AI or bot.
-                - Maintain the persona of a helpful, knowledgeable Esri technical expert.
-                - Remember the full conversation history to provide contextual and relevant answers.
-                `
-              }]
-            };
-            const chatHistory = messages.slice(-5).map(msg => ({
-              role: msg.sender === 'user' ? 'user' : 'model',
-              parts: [{ text: msg.text }]
-            }));
-            chatHistory.push({ role: "user", parts: [{ text: userInput }] });
-            const payload = {
-              contents: chatHistory,
-              systemInstruction: systemInstruction,
-              generationConfig: isExploratory ? { maxOutputTokens: 4000 } : { maxOutputTokens: 1000 }
-            };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const apiCall = async () => {
-              console.log('Request Payload:', JSON.stringify(payload, null, 2));
-              console.log('Input Token Estimate:', JSON.stringify(payload).length / 4);
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 10000);
-              const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal,
-              });
-              clearTimeout(timeoutId);
-              if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API Error Details:', errorText);
-                throw new Error(`API error: ${response.status} ${response.statusText}`);
-              }
-              const result = await response.json();
-              console.log('Full API Response:', JSON.stringify(result, null, 2));
-              if (result.candidates && result.candidates.length > 0) {
-                const candidate = result.candidates[0];
-                if (candidate.finishReason === 'MAX_TOKENS') {
-                  return candidate.content.parts[0].text + '\n\n**Warning**: Response truncated due to token limit. Try a more specific query.';
-                }
-                if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                  return candidate.content.parts[0].text;
-                }
-                for (let i = 1; i < result.candidates.length; i++) {
-                  if (result.candidates[i].content && result.candidates[i].content.parts && result.candidates[i].content.parts.length > 0) {
-                    return result.candidates[i].content.parts[0].text;
-                  }
-                }
-              }
-              throw new Error('No valid response received from API.');
-            };
-            botText = await callApiWithBackoff(apiCall);
-            setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
-          } catch (error) {
-            console.error('API call failed:', error);
-            const searchUrl = `https://doc.arcgis.com/en/search/?q=${encodeURIComponent(userInput)}`;
-            let fallbackText = `I'm sorry, I couldn't retrieve a response from the API (Error: ${error.message}). `;
-            if (userInput.toLowerCase().includes('what is gis')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 1\. What is GIS\?[\s\S]*?(?=###|$)/)[0];
-            } else if (userInput.toLowerCase().includes('experience builder') && userInput.toLowerCase().includes('dashboard')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 19\. Creating a Dashboard in ArcGIS Experience Builder[\s\S]*?(?=###|$)/)[0];
-            } else if (userInput.toLowerCase().includes('mining') || userInput.toLowerCase().includes('mineral exploration')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 23\. ArcGIS for Mineral Exploration[\s\S]*?(?=###|$)/)[0] || 'No specific mining information available.';
-            } else if (userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 2\. GIS Applications and Use Cases[\s\S]*?(?=###|$)/)[0];
-            } else {
-              fallbackText += `Please check the official [Esri Documentation for "${userInput}"](${searchUrl}) or try rephrasing your question.`;
-            }
-            botText = fallbackText;
-            setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
-          }
+          setIsLoading(false);
+          return;
         }
+
+        try {
+          const isExploratory = userInput.toLowerCase().includes('ideas') || userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can');
+          const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
+          const systemInstruction = {
+            role: "system",
+            parts: [{
+              text: `You are Geo-Assist, a technical support assistant for Esri GIS products. Provide accurate, structured responses with headings, bullets, examples, and sources. Prioritize the knowledge base for basic questions, supplement with search results for advanced queries. Cite sources inline. Do not mention AI.
+Knowledge Base: ${getRelevantKB(userInput)}
+Search Results: ${searchResults}`
+            }]
+          };
+          const chatHistory = messages.slice(-3).map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+          }));
+          chatHistory.push({ role: "user", parts: [{ text: userInput }] });
+          const payload = {
+            contents: chatHistory,
+            systemInstruction,
+            generationConfig: { maxOutputTokens: isExploratory ? 4000 : 1000 }
+          };
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const apiCall = async () => {
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              signal: AbortSignal.timeout(8000)
+            });
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const result = await response.json();
+            if (result.candidates?.[0]?.finishReason === 'MAX_TOKENS') {
+              return result.candidates[0].content.parts[0].text + '\n\n**Warning**: Response truncated. Try a more specific query.';
+            }
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || 'No valid response from API.';
+          };
+          botText = await callApiWithBackoff(apiCall);
+        } catch (error) {
+          console.error('API error:', error);
+          botText = `Failed to retrieve response: ${error.message}. Fallback: ${getRelevantKB(userInput)}`;
+        }
+        setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
         setIsLoading(false);
       };
 
-      const BotMessage = ({ message }) => (
+      const BotMessage = React.memo(({ message }) => (
         <div className="flex items-start mb-4">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-esriBlue flex items-center justify-center text-white font-bold text-sm mr-2">
             GA
@@ -540,29 +297,29 @@
           <div className="bg-esriLightBlue p-3 rounded-xl shadow-sm max-w-lg">
             <div
               className="text-gray-900 leading-relaxed markdown-content"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(message.text)) }}
+              dangerouslySetInnerHTML={{ __html: typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(message.text)) : message.text }}
             />
           </div>
         </div>
-      );
+      ));
 
-      const UserMessage = ({ message }) => (
+      const UserMessage = React.memo(({ message }) => (
         <div className="flex items-end justify-end mb-4">
           <div className="bg-esriBlue text-white p-3 rounded-xl shadow-sm max-w-lg">
             <p className="leading-relaxed">{message.text}</p>
           </div>
         </div>
-      );
+      ));
 
       const ConfirmModal = () => (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-auto">
             <h3 className="text-lg font-semibold mb-4">Clear Chat History</h3>
-            <p className="mb-6">Are you sure you want to clear the chat history? This action cannot be undone.</p>
+            <p className="mb-6">Are you sure you want to clear the chat history?</p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-all duration-200"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
               >
                 Cancel
               </button>
@@ -572,7 +329,7 @@
                   localStorage.removeItem('esriChatMessages');
                   setShowConfirmModal(false);
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-all duration-200"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
               >
                 Clear
               </button>
@@ -586,7 +343,7 @@
           <div className="bg-esriBlue text-white p-4 flex items-center justify-between rounded-t-xl shadow-md">
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-esriBlue">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-esriBlue" aria-label="Geo-Assist Logo">
                   <path d="M7.749 1.576a.77.77 0 0 0-.251.725l1.58 4.743a.77.77 0 0 0 .903.543l3.411-.99a.77.77 0 0 1 .588.163l4.777 4.778a.77.77 0 0 1 .163.587l-.99 3.412a.77.77 0 0 0 .543.903l4.743 1.581c.29.097.436.417.252.724a.77.77 0 0 1-.725.252l-4.743-1.58a.77.77 0 0 0-.903.543l-.99 3.411a.77.77 0 0 1-.163.588l-4.778 4.777a.77.77 0 0 1-.587.163l-3.412-.99a.77.77 0 0 0-.903.543l-1.581 4.743a.77.77 0 0 1-.724.251a.77.77 0 0 1-.252-.725l1.58-4.743a.77.77 0 0 0-.543-.903l-3.411-.99a.77.77 0 0 1-.588-.163l-4.777-4.778a.77.77 0 0 1-.163-.587l.99-3.412a.77.77 0 0 0-.543-.903L.027 2.39a.77.77 0 0 1 .724-.251Z" />
                 </svg>
               </div>
@@ -594,16 +351,17 @@
             </div>
             <button
               onClick={() => setShowConfirmModal(true)}
-              className="flex items-center text-sm text-gray-200 hover:text-white transition-colors duration-200"
+              className="flex items-center text-sm text-gray-200 hover:text-white"
+              aria-label="Clear Chat"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1" aria-label="Clear Chat Icon">
                 <path d="M5.755 5.948A4.755 4.755 0 0 1 10.5 1.25h3c.895 0 1.746.356 2.378.988A4.755 4.755 0 0 1 18.75 5.948v.552h-2.127l-.61-1.832a.75.75 0 0 0-.585-.453l-6.876-1.588c-.378-.087-.736.1-.908.435-.172.335-.078.723.228.985l.628.532H4.25a.75.75 0 0 0 0 1.5h15.5a.75.75 0 0 0 0-1.5H4.25v-.552Z" />
                 <path fillRule="evenodd" d="M3.75 6.75a.75.75 0 0 0-.75.75V19.5c0 1.144.863 2.054 1.996 2.054h14.008c1.133 0 1.996-.91 1.996-2.054V7.5a.75.75 0 0 0-.75-.75H3.75ZM6 12a.75.75 0 0 1 .75-.75h2a.75.75 0 0 1 0 1.5h-2A.75.75 0 0 1 6 12Zm3.5 1.5a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H9.5ZM12 10.5h-2a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5Z" clipRule="evenodd" />
               </svg>
               <span>Clear Chat</span>
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto chat-scroll-container p-4">
+          <div className="flex-1 chat-scroll-container p-4">
             {messages.map((msg, index) => (
               msg.sender === 'user' ? (
                 <UserMessage key={index} message={msg} />
@@ -638,7 +396,7 @@
               />
               <button
                 type="submit"
-                className={`py-2 px-4 rounded-lg text-white font-semibold transition-colors duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-esriBlue hover:bg-opacity-90'}`}
+                className={`py-2 px-4 rounded-lg text-white font-semibold ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-esriBlue hover:bg-opacity-90'}`}
                 disabled={isLoading}
               >
                 Send
