@@ -86,11 +86,11 @@
       const [showConfirmModal, setShowConfirmModal] = React.useState(false);
       const messagesEndRef = React.useRef(null);
       const inputRef = React.useRef(null);
-      // NOTE: For live GitHub usage, you need to replace this with your actual API key
-      const apiKey = "AIzaSyADvIoS1NcspmkXp3sHYrD38zhh1DlBXAM"; 
-      const model = "gemini-2.5-flash-preview-05-20"; // Updated to a stable model for conversation
-      // NOTE: For live GitHub usage, you need to replace this with your actual Google CSE ID
-      const cx = "25ed03fb10e654c08"; 
+      // Replace with your actual Google API key (securely in production)
+      const apiKey = "AIzaSyADvIoS1NcspmkXp3sHYrD38zhh1DlBXAM";
+      const model = "gemini-1.5-pro"; // Stable model
+      // Replace with your actual Google CSE ID
+      const cx = "25ed03fb10e654c08";
 
       // Load stored messages or initial welcome
       React.useEffect(() => {
@@ -326,6 +326,20 @@
 - **Custom Widgets**: Use Developer Edition to build React/JS widgets for Experience Builder.
 - **APIs**: ArcGIS REST APIs for services; ArcPy for scripting.
 - **Sources**: https://developers.arcgis.com/experience-builder/guide/getting-started-widget/, https://developers.arcgis.com/rest/.
+
+### 23. ArcGIS for Mineral Exploration
+- **Overview**: ArcGIS supports mining engineers by analyzing geological, geophysical, and geochemical data to identify drilling locations.
+- **Key Tools**:
+  - **ArcGIS Pro**: Use Spatial Analyst for suitability modeling, 3D Analyst for subsurface visualization.
+  - **ArcGIS Online**: Share exploration maps with teams.
+  - **Field Maps/Survey123**: Collect field data (e.g., core samples, GPS points).
+- **Workflow**:
+  1. Import geological data (e.g., mineral deposits, faults) into ArcGIS Pro.
+  2. Use Weighted Overlay to rank drilling sites based on mineral potential, accessibility, and environmental factors.
+  3. Visualize results in a 3D scene or web map.
+  4. Deploy Field Maps for navigation to drilling sites.
+- **Example**: Map gold deposits in Nevada, weight by assay data, and create a dashboard for exploration planning.
+- **Sources**: Esri Mining Solutions (https://www.esri.com/en-us/industries/mining/overview), GIS Stack Exchange.
       `.trim();
 
       const sendMessage = async (e) => {
@@ -334,33 +348,12 @@
 
         const userInput = input.trim();
         const newUserMessage = { text: userInput, sender: 'user' };
-        
-        // Add user message to history and update UI
         setMessages((curr) => [...curr, newUserMessage]);
         setInput('');
         setIsLoading(true);
 
-        // --- NEW LOGIC FOR CONVERSATIONAL PROMPTS ---
-        // A list of conversational prefixes to guide the model.
-        const conversationalPrefixes = [
-          "Explain to me in a detailed, step-by-step way how to ",
-          "Can you give me a thorough guide on ",
-          "I'm trying to figure out the best way to ",
-          "Walk me through the process of ",
-          "I'd like to learn more about how to ",
-          "I need some information about "
-        ];
-        
-        // Pick a random prefix to make the prompt more flexible.
-        const randomPrefix = conversationalPrefixes[Math.floor(Math.random() * conversationalPrefixes.length)];
-        
-        // Combine the conversational prefix with the user's raw input.
-        const enhancedPrompt = `${randomPrefix}${userInput}`;
-        // --- END OF NEW LOGIC ---
-
         let botText = '';
 
-        // Fetch ArcGIS REST API metadata
         const fetchServiceMetadata = async (url) => {
           try {
             if (!url.includes('arcgis') || !url.match(/\/rest\/services\/[^/]+\/(MapServer|FeatureServer)/)) {
@@ -369,7 +362,6 @@
             const response = await fetch(`${url}?f=json`, { signal: AbortSignal.timeout(5000) });
             if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             const data = await response.json();
-
             let metadata = `**Service Metadata for:** ${data.name || data.documentInfo?.Title || 'Untitled Service'}\n\n`;
             if (data.description) metadata += `- **Description**: ${data.description}\n`;
             if (data.serviceDataType) metadata += `- **Data Type**: ${data.serviceDataType}\n`;
@@ -393,7 +385,6 @@
           }
         };
 
-        // Fetch Esri docs using Google Custom Search API
         const fetchEsriSearchResults = async (query) => {
           const cacheKey = `esri_search_${query}`;
           const cached = localStorage.getItem(cacheKey);
@@ -401,7 +392,6 @@
             console.log('Using cached search results for:', query);
             return cached;
           }
-
           try {
             const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:doc.arcgis.com OR site:developers.arcgis.com OR site:support.esri.com OR site:community.esri.com OR site:gis.stackexchange.com OR site:esri.com')}&num=10`;
             const response = await fetch(searchUrl);
@@ -409,7 +399,7 @@
             const data = await response.json();
             if (data.items) {
               const result = data.items.map(item => `- **${item.title}**: ${item.snippet} (Source: ${item.link})`).join('\n');
-              localStorage.setItem(cacheKey, result); // Cache for 7 days
+              localStorage.setItem(cacheKey, result);
               setTimeout(() => localStorage.removeItem(cacheKey), 7 * 24 * 60 * 60 * 1000);
               console.log('Search results fetched:', result);
               return result;
@@ -422,23 +412,27 @@
           }
         };
 
-        // Exponential backoff for API calls
+        let lastRequestTime = 0;
+        const minRequestInterval = 1000;
         const callApiWithBackoff = async (apiCall, retries = 5, delay = 1000) => {
+          const now = Date.now();
+          if (now - lastRequestTime < minRequestInterval) {
+            await new Promise(res => setTimeout(res, minRequestInterval - (now - lastRequestTime)));
+          }
+          lastRequestTime = Date.now();
           try {
             return await apiCall();
           } catch (error) {
             console.error('API call attempt failed:', error);
-            if (retries > 0) {
+            if (retries > 0 && (error.message.includes('429') || error.message.includes('timeout'))) {
               console.log(`Retrying API call, ${retries} retries left, waiting ${delay}ms`);
               await new Promise(res => setTimeout(res, delay));
               return callApiWithBackoff(apiCall, retries - 1, delay * 2);
-            } else {
-              throw error;
             }
+            throw error;
           }
         };
 
-        // Handle user input
         if (userInput.toLowerCase().includes('service url') || userInput.toLowerCase().includes('rest api') || userInput.match(/https?:\/\//)) {
           const urlMatch = userInput.match(/https?:\/\/[^\s]+/);
           if (urlMatch) {
@@ -446,25 +440,17 @@
           } else {
             botText = 'Please provide a valid ArcGIS service URL, e.g., "What are the layers in this service: https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer"';
           }
-          const newBotMessage = { text: botText, sender: 'bot' };
-          setMessages((curr) => [...curr, newBotMessage]);
+          setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
         } else {
           try {
             const isExploratory = userInput.toLowerCase().includes('ideas') || userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can');
             const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
-            
-            // --- UPDATED LOGIC TO PASS CONVERSATION HISTORY & ENHANCED PROMPT ---
             const systemInstruction = {
               role: "system",
               parts: [{
                 text: `You are Geo-Assist, a professional technical support assistant for Esri GIS products. Your purpose is to provide helpful, accurate, and structured information to users. 
-                
-                Knowledge Base:
-                ${esriKnowledgeBase}
-                
-                Online Search Results (for up-to-date or specific queries):
-                ${searchResults}
-
+                Knowledge Base: ${esriKnowledgeBase}
+                Online Search Results: ${searchResults}
                 Instructions:
                 - Use a professional, friendly, and structured format.
                 - Prioritize information from the knowledge base first for foundational questions.
@@ -476,61 +462,71 @@
                 `
               }]
             };
-
-            const chatHistory = messages.map(msg => ({
+            const chatHistory = messages.slice(-5).map(msg => ({
               role: msg.sender === 'user' ? 'user' : 'model',
               parts: [{ text: msg.text }]
             }));
-            // Use the enhanced prompt here for the model to process
-            chatHistory.push({ role: "user", parts: [{ text: enhancedPrompt }] });
-            
+            chatHistory.push({ role: "user", parts: [{ text: userInput }] });
             const payload = {
               contents: chatHistory,
-              // Use the system instruction to guide the model's behavior
               systemInstruction: systemInstruction,
-              generationConfig: isExploratory ? { maxOutputTokens: 2000 } : { maxOutputTokens: 500 }
+              generationConfig: isExploratory ? { maxOutputTokens: 4000 } : { maxOutputTokens: 1000 }
             };
-            
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            
             const apiCall = async () => {
-              console.log('Sending API request with conversation history to:', apiUrl);
+              console.log('Request Payload:', JSON.stringify(payload, null, 2));
+              console.log('Input Token Estimate:', JSON.stringify(payload).length / 4);
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 10000);
               const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                signal: controller.signal,
               });
-              if (!response.ok) throw new Error(`API error: ${response.status} ${response.statusText}`);
-              const result = await response.json();
-              console.log('API response:', result);
-              if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                return result.candidates[0].content.parts[0].text;
-              } else {
-                throw new Error('No valid response received from API.');
+              clearTimeout(timeoutId);
+              if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error Details:', errorText);
+                throw new Error(`API error: ${response.status} ${response.statusText}`);
               }
+              const result = await response.json();
+              console.log('Full API Response:', JSON.stringify(result, null, 2));
+              if (result.candidates && result.candidates.length > 0) {
+                const candidate = result.candidates[0];
+                if (candidate.finishReason === 'MAX_TOKENS') {
+                  return candidate.content.parts[0].text + '\n\n**Warning**: Response truncated due to token limit. Try a more specific query.';
+                }
+                if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                  return candidate.content.parts[0].text;
+                }
+                for (let i = 1; i < result.candidates.length; i++) {
+                  if (result.candidates[i].content && result.candidates[i].content.parts && result.candidates[i].content.parts.length > 0) {
+                    return result.candidates[i].content.parts[0].text;
+                  }
+                }
+              }
+              throw new Error('No valid response received from API.');
             };
-            
             botText = await callApiWithBackoff(apiCall);
-            const newBotMessage = { text: botText, sender: 'bot' };
-            setMessages((curr) => [...curr, newBotMessage]);
-            
+            setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
           } catch (error) {
             console.error('API call failed:', error);
             const searchUrl = `https://doc.arcgis.com/en/search/?q=${encodeURIComponent(userInput)}`;
             let fallbackText = `I'm sorry, I couldn't retrieve a response from the API (Error: ${error.message}). `;
-            
             if (userInput.toLowerCase().includes('what is gis')) {
               fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 1\. What is GIS\?[\s\S]*?(?=###|$)/)[0];
             } else if (userInput.toLowerCase().includes('experience builder') && userInput.toLowerCase().includes('dashboard')) {
               fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 19\. Creating a Dashboard in ArcGIS Experience Builder[\s\S]*?(?=###|$)/)[0];
+            } else if (userInput.toLowerCase().includes('mining') || userInput.toLowerCase().includes('mineral exploration')) {
+              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 23\. ArcGIS for Mineral Exploration[\s\S]*?(?=###|$)/)[0] || 'No specific mining information available.';
             } else if (userInput.toLowerCase().includes('use cases') || userInput.toLowerCase().includes('how can')) {
               fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 2\. GIS Applications and Use Cases[\s\S]*?(?=###|$)/)[0];
             } else {
               fallbackText += `Please check the official [Esri Documentation for "${userInput}"](${searchUrl}) or try rephrasing your question.`;
             }
             botText = fallbackText;
-            const newBotMessage = { text: botText, sender: 'bot' };
-            setMessages((curr) => [...curr, newBotMessage]);
+            setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
           }
         }
         setIsLoading(false);
@@ -591,74 +587,71 @@
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-esriBlue">
-                  <path d="M7.749 1.576a.77.77 0 0 0-.251.725l1.58 4.743a.77.77 0 0 0 .903.543l3.411-.99a.77.77 0 0 1 .588.163l4.777 4.778a.77.77 0 0 1 .163.587l-.99 3.412a.77.77 0 0 0 .543.903l4.743 1.581c.29.097.436.417.252.724a.77.77 0 0 1-.725.252l-4.743-1.58a.77.77 0 0 0-.903.543l-.99 3.411a.77.77 0 0 1-.163.588l-4.778 4.777a.77.77 0 0 1-.587.163l-3.412-.99a.77.77 0 0 0-.903.543l-1.581 4.743a.77.77 0 0 1-.724.252a.77.77 0 0 1-.252-.725l1.58-4.743a.77.77 0 0 0-.543-.903l-3.411-.99a.77.77 0 0 1-.588-.163l-4.777-4.778a.77.77 0 0 1-.163-.587l.99-3.412a.77.77 0 0 0-.543-.903L.027 2.39a.77.77 0 0 1 .724-.251Z" />
+                  <path d="M7.749 1.576a.77.77 0 0 0-.251.725l1.58 4.743a.77.77 0 0 0 .903.543l3.411-.99a.77.77 0 0 1 .588.163l4.777 4.778a.77.77 0 0 1 .163.587l-.99 3.412a.77.77 0 0 0 .543.903l4.743 1.581c.29.097.436.417.252.724a.77.77 0 0 1-.725.252l-4.743-1.58a.77.77 0 0 0-.903.543l-.99 3.411a.77.77 0 0 1-.163.588l-4.778 4.777a.77.77 0 0 1-.587.163l-3.412-.99a.77.77 0 0 0-.903.543l-1.581 4.743a.77.77 0 0 1-.724.251a.77.77 0 0 1-.252-.725l1.58-4.743a.77.77 0 0 0-.543-.903l-3.411-.99a.77.77 0 0 1-.588-.163l-4.777-4.778a.77.77 0 0 1-.163-.587l.99-3.412a.77.77 0 0 0-.543-.903L.027 2.39a.77.77 0 0 1 .724-.251Z" />
                 </svg>
               </div>
               <h1 className="text-xl font-bold">Geo-Assist</h1>
             </div>
             <button
               onClick={() => setShowConfirmModal(true)}
-              className="p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200"
-              aria-label="Clear chat history"
+              className="flex items-center text-sm text-gray-200 hover:text-white transition-colors duration-200"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.93a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m-1.022.165L6.1 19.673a2.25 2.25 0 0 0 2.244 2.077h4.914a2.25 2.25 0 0 0 2.244-2.077L16.464 5.79m-14.456 0a48.804 48.804 0 0 1-1.018-.135V2.42a1.5 1.5 0 0 1 .636-1.393L3.03 1.096a.75.75 0 0 1 1.06-.102l1.392 1.258a.75.75 0 0 1 .102 1.06L5.356 3.992M2.515 2.457a.75.75 0 0 0-.964 1.157l1.01 1.257m.964-1.157a.75.75 0 0 0 .964 1.157l-1.01 1.257M16.485 2.457a.75.75 0 0 1 .964 1.157l-1.01 1.257m-1.157-.964a.75.75 0 0 1 1.157.964l-1.257-1.01M17.485 2.457a.75.75 0 0 1 .964 1.157l-1.01 1.257m-1.157-.964a.75.75 0 0 1 1.157.964l-1.257-1.01" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+                <path d="M5.755 5.948A4.755 4.755 0 0 1 10.5 1.25h3c.895 0 1.746.356 2.378.988A4.755 4.755 0 0 1 18.75 5.948v.552h-2.127l-.61-1.832a.75.75 0 0 0-.585-.453l-6.876-1.588c-.378-.087-.736.1-.908.435-.172.335-.078.723.228.985l.628.532H4.25a.75.75 0 0 0 0 1.5h15.5a.75.75 0 0 0 0-1.5H4.25v-.552Z" />
+                <path fillRule="evenodd" d="M3.75 6.75a.75.75 0 0 0-.75.75V19.5c0 1.144.863 2.054 1.996 2.054h14.008c1.133 0 1.996-.91 1.996-2.054V7.5a.75.75 0 0 0-.75-.75H3.75ZM6 12a.75.75 0 0 1 .75-.75h2a.75.75 0 0 1 0 1.5h-2A.75.75 0 0 1 6 12Zm3.5 1.5a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H9.5ZM12 10.5h-2a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5Z" clipRule="evenodd" />
               </svg>
+              <span>Clear Chat</span>
             </button>
           </div>
-
-          <div className="flex-1 p-4 overflow-y-auto chat-scroll-container">
-            {messages.map((msg, index) =>
+          <div className="flex-1 overflow-y-auto chat-scroll-container p-4">
+            {messages.map((msg, index) => (
               msg.sender === 'user' ? (
                 <UserMessage key={index} message={msg} />
               ) : (
                 <BotMessage key={index} message={msg} />
               )
-            )}
+            ))}
+            <div ref={messagesEndRef} />
             {isLoading && (
               <div className="flex items-start mb-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-esriBlue flex items-center justify-center text-white font-bold text-sm mr-2">
                   GA
                 </div>
-                <div className="flex items-center space-x-1 p-3 rounded-xl bg-esriLightBlue shadow-sm">
-                  <div className="w-2 h-2 rounded-full bg-esriBlue animate-pulse-dot"></div>
-                  <div className="w-2 h-2 rounded-full bg-esriBlue animate-pulse-dot"></div>
-                  <div className="w-2 h-2 rounded-full bg-esriBlue animate-pulse-dot"></div>
+                <div className="flex items-center space-x-2 bg-esriLightBlue p-3 rounded-xl shadow-sm">
+                  <span className="h-2 w-2 rounded-full bg-esriBlue animate-pulse-dot"></span>
+                  <span className="h-2 w-2 rounded-full bg-esriBlue animate-pulse-dot"></span>
+                  <span className="h-2 w-2 rounded-full bg-esriBlue animate-pulse-dot"></span>
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
-
-          <form onSubmit={sendMessage} className="p-4 border-t border-gray-200">
-            <div className="flex items-center space-x-2">
+          <div className="p-4 border-t border-gray-200">
+            <form onSubmit={sendMessage} className="flex space-x-2">
               <input
                 ref={inputRef}
                 type="text"
+                className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-esriBlue"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-esriBlue transition-all"
-                placeholder="Ask me anything about Esri GIS..."
+                placeholder="Ask a question about Esri GIS..."
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                className={`flex-shrink-0 px-6 py-3 rounded-full font-semibold text-white transition-all transform hover:scale-105 active:scale-95 ${
-                  isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-esriBlue hover:bg-esriBlue-600'
-                }`}
+                className={`py-2 px-4 rounded-lg text-white font-semibold transition-colors duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-esriBlue hover:bg-opacity-90'}`}
                 disabled={isLoading}
               >
                 Send
               </button>
-            </div>
-          </form>
-
+            </form>
+          </div>
           {showConfirmModal && <ConfirmModal />}
         </div>
       );
     };
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>
