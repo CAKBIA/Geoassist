@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Esri GIS Technical Support</title>
+  <title>BIA GIS Technical Support</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -57,11 +57,21 @@
     .markdown-content h1, .markdown-content h2, .markdown-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
     .markdown-content a { color: #005995; text-decoration: underline; }
     .markdown-content pre { background-color: #e2e8f0; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; }
+
+    /* Ensure content stays within bounds */
+    .chat-container {
+      min-width: 0;
+    }
+    .message-content {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
   </style>
 </head>
 
 <body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
-  <div id="root" class="w-full max-w-2xl h-[90vh] flex flex-col"></div>
+  <div id="root" class="w-full max-w-2xl h-[90vh] flex flex-col chat-container"></div>
 
   <!-- React, ReactDOM, Marked, and DOMPurify -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -95,7 +105,7 @@
         try {
           const storedMessages = JSON.parse(localStorage.getItem('esriChatMessages') || '[]');
           setMessages(storedMessages.length > 0 ? storedMessages : [
-            { text: 'Hello! I\'m Geo-Assist, your dedicated helper for all things Esri GIS. Ask me anything about GIS, ArcGIS tools, or troubleshooting!', sender: 'bot' }
+            { text: 'Hello! I’m BIA Geo-Assist, your friendly GIS sidekick for Esri and BIA-related geospatial queries. Ask me anything about ArcGIS tools, BIA Branch of Geospatial Support (BOGS), or troubleshooting—I’m here to help with a smile!', sender: 'bot' }
           ]);
         } catch (e) {
           console.error('Failed to load messages from localStorage:', e);
@@ -123,7 +133,7 @@
         }
       }, [messages]);
 
-      // Expanded Knowledge base with new GIS definition section
+      // Expanded Knowledge base with BIA-specific additions
       const esriKnowledgeBase = `
 ## Esri GIS Technical Support Knowledge Base
 
@@ -140,7 +150,7 @@
   - Analyzing traffic for road optimization.
   - Visualizing demographic data for urban planning.
 - **Esri Context**: Esri’s ArcGIS platform includes ArcGIS Pro (desktop), ArcGIS Online (web), and apps like Experience Builder for interactive apps.
-- **Sources**: Esri Documentation[](https://www.esri.com/en-us/what-is-gis/overview).
+- **Sources**: Esri Documentation (https://www.esri.com/en-us/what-is-gis/overview).
 
 ### 2. Geoprocessing Tools in ArcGIS Pro
 - **Analysis Toolbox**: Tools for spatial analysis, including Overlay (e.g., Union, Intersect), Proximity (e.g., Buffer, Near), and Statistics (e.g., Summary Statistics).
@@ -309,16 +319,53 @@
 - **APIs**: ArcGIS REST APIs for services; ArcPy for scripting.
 - **Sources**: https://developers.arcgis.com/experience-builder/guide/getting-started-widget/, https://developers.arcgis.com/rest/.
 
-### 22. BIA Branch of Geospatial Support
+### 22. BIA Branch of Geospatial Support (BOGS)
 - **Mission**: Assist Tribal governments and Indian Affairs in managing cultural and natural resources of Indian Country by providing geographic information systems (GIS) software, training, and technical support.
 - **Who They Serve**: Indian Affairs (IA) and all federally-recognized Tribes; regional geospatial coordinators working with Tribes and local BIA agencies; BIA stakeholders for mapping; represent BIA to other agencies, governments, and the public with authoritative maps.
 - **Services**:
   - **Software**: ArcGIS, Avenza Maps Pro, DigitalGlobe provided through the Department of the Interior’s Enterprise License Agreement (DOI-BIA ELA).
   - **Training**: Programs teaching use of GIS for land management, including irrigation flood plain analysis, forest harvesting, wildland fire analysis, oil and gas management, and other economic analyses.
   - **Technical Support**: GIS technical support for Tribal governments and Indian Affairs via DOI-BIA ELA.
+- **Contact**:
+  - **Branch of Geospatial Support**
+  - Office of Trust Services, Division of Resource Integration Services
+  - Address: 13922 Denver West Parkway Building 54, Suite 300, Lakewood, CO 80401
+  - Hours: 9:00 a.m. – 5:00 p.m. MDT, Monday-Friday
+  - Email: geospatial@bia.gov
+  - Regional Geospatial Coordinator (Midwest): MWRGIS@bia.gov
+  - Website: https://www.bia.gov/bia/ots/dris/bogs
 - **Open GIS Data**: Public datasets maintained and hosted by BOGS available at https://onemap-bia-geospatial.hub.arcgis.com/.
 - **Esri Licenses and Resources**: Access to ArcGIS software through the DOI-BIA ELA as part of software services for Tribes and Indian Affairs; public datasets accessible via ArcGIS Hub platform.
-- **Sources**: BIA Branch of Geospatial Support[](https://www.bia.gov/bia/ots/dris/bogs).
+- **Sources**: https://www.bia.gov/bia/ots/dris/bogs, https://www.bia.gov/service/geospatial-software, https://www.bia.gov/service/geospatial-training, https://onemap-bia-geospatial.hub.arcgis.com/.
+
+### 23. BIA Geospatial Software
+- **Eligibility**: Available to authorized Bureau of Indian Affairs (BIA) employees and employees of federally recognized Tribal Governments. Limited to approved DOI-BIA ELA program organizations as per the ELA Participation Policy (https://www.bia.gov/sites/default/files/dup/assets/public/pdf/idc015893.pdf).
+- **Supported Software**:
+  - **DOI-BIA Esri Enterprise License Agreement (ELA)**: ArcGIS core software and limited extensions, select Esri e-Learning courses and workshops, paid maintenance for existing products, a limited number of Esri specialty products, discounts on other Esri and third-party products, technical support.
+  - **Other Tools**: Avenza Maps Pro, DigitalGlobe.
+  - Products listed in ELA Product List (https://www.bia.gov/sites/default/files/media_document/ela_product_list.pdf) at no cost for eligible organizations.
+  - Current Esri ELA valid through January 31, 2029.
+- **Request Process**: Apply to become approved under DOI-BIA ELA at https://www.bia.gov/service/geospatial-software/apply-ela. For current versions or support, contact geospatial@bia.gov or the Regional Geospatial Coordinator at MWRGIS@bia.gov.
+- **License Agreements and Usage Policies**: Governed by ELA Participation Policy (https://www.bia.gov/sites/default/files/dup/assets/public/pdf/idc015893.pdf).
+- **Sources**: https://www.bia.gov/service/geospatial-software.
+
+### 24. BIA Geospatial Training
+- **Training Programs**:
+  - **Self-Paced Online Courses**: Esri E-Learning (over 400 resources at https://www.esri.com/training/, bookmark: http://www.esri.com/training/Bookmark/P3KS92AX4), Geospatial Training Services (over 40 courses at https://geospatialtraining.com/).
+  - **Instructor-Led Online Training**: Events by BOGS or USGS; The GEO Project with Mississippi State University; Esri Instructor-Led Training.
+  - **On-Site Training**: Information forthcoming.
+  - Focus on GIS for land management, irrigation analysis, forest harvesting, wildland fire analysis, oil and gas management, and economic analyses.
+- **Target Audience**: BIA employees and employees of federally-recognized Tribes (list at https://www.govinfo.gov/content/pkg/FR-2021-01-29/pdf/2021-01606.pdf). Must be active DOI-BIA ELA participants.
+- **Request Process**: Become active ELA participant at https://www.bia.gov/service/geospatial-software/apply-ela. Contact Geospatial Support Help Desk at geospatial@bia.gov or the Regional Geospatial Coordinator at MWRGIS@bia.gov for access. Registration for events opens ~30 days prior.
+- **Sources**: https://www.bia.gov/service/geospatial-training, https://onemap-bia-geospatial.hub.arcgis.com/pages/training.
+
+### 25. BIA Geospatial Open Data Hub
+- **Overview**: The BIA Open Data Portal (https://onemap-bia-geospatial.hub.arcgis.com/) provides national level geospatial data in the public domain to support tribal community resiliency, research, and more. Maintained by the Branch of Geospatial Support. Serves as a repository for BIA geodata, applications, and resources.
+- **Available Data**: Data available for download as CSV, KML, Shapefile; accessible via web services for application development and data visualization. Includes datasets like BIA Tracts (interactive map for tracts, parcels, BIA lands).
+- **Applications**: StoryMaps, Web Applications, Web Maps for deeper data exploration.
+- **Access**: Public access; no cost. For contributions or support, contact geospatial@bia.gov or the Regional Geospatial Coordinator at MWRGIS@bia.gov.
+- **Integration with Esri**: Built on ArcGIS Hub; supports ArcGIS tools and services.
+- **Sources**: https://onemap-bia-geospatial.hub.arcgis.com/, https://catalog.data.gov/dataset/bia-bogs-onemap.
       `.trim();
 
       const sendMessage = async (e) => {
@@ -375,7 +422,7 @@
           }
 
           try {
-            const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:doc.arcgis.com OR site:developers.arcgis.com OR site:support.esri.com OR site:community.esri.com')}&num=5`;
+            const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query + ' site:doc.arcgis.com OR site:developers.arcgis.com OR site:support.esri.com OR site:community.esri.com OR site:bia.gov')}&num=5`;
             const response = await fetch(searchUrl);
             if (!response.ok) throw new Error(`Search API error: ${response.status} ${response.statusText}`);
             const data = await response.json();
@@ -410,13 +457,14 @@
           }
         };
 
-        // Handle user input
+        // Handle user input with personality
         if (userInput.toLowerCase().includes('service url') || userInput.toLowerCase().includes('rest api') || userInput.match(/https?:\/\//)) {
           const urlMatch = userInput.match(/https?:\/\/[^\s]+/);
           if (urlMatch) {
             botText = await fetchServiceMetadata(urlMatch[0]);
+            botText = `Great question! Here’s the scoop on that service URL: ${botText} Let me know if you need more details—I’m learning from you to get even better!`;
           } else {
-            botText = 'Please provide a valid ArcGIS service URL, e.g., "What are the layers in this service: https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer"';
+            botText = 'Oops, looks like I need a valid ArcGIS service URL to work my magic! Try something like "What are the layers in this service: https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer" — I’ll figure it out with you!';
           }
           setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
         } else {
@@ -424,10 +472,11 @@
             // Fetch search results for advanced queries
             const searchResults = userInput.toLowerCase().includes('what is gis') ? '' : await fetchEsriSearchResults(userInput);
             const prompt = `
-              You are Geo-Assist, a professional technical support assistant for Esri GIS products. Respond in a structured format with headings, bullets, examples, and sources. For basic questions like "What is GIS?", prioritize the knowledge base. For advanced or specific queries, use search results if relevant, then supplement with the knowledge base. Cite sources inline (e.g., Esri Documentation, URL). Do not mention AI.
+              You are BIA Geo-Assist, a friendly and professional technical support assistant for Esri GIS products and BIA-related geospatial queries. Respond in a structured format with headings, bullets, examples, and sources. Add a cheerful tone, use phrases like 'great question!' or 'let’s tackle this together!', and encourage follow-ups. For basic questions like 'What is GIS?', prioritize the knowledge base. For advanced or specific queries, use search results if relevant, then supplement with the knowledge base. Include BIA-specific information from the knowledge base for relevant queries (e.g., BOGS contact, software, training). Cite sources inline (e.g., Esri Documentation, BIA Website). Learn from the user’s input by adapting responses based on their previous questions if applicable. Do not mention AI.
               Online Search Results: ${searchResults}
               Knowledge Base: ${esriKnowledgeBase}
               User Query: ${userInput}
+              Previous Context: ${messages.map(m => m.text).join('\n')}
             `;
             const payload = {
               contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -456,15 +505,16 @@
           } catch (error) {
             console.error('API call failed:', error);
             const searchUrl = `https://doc.arcgis.com/en/search/?q=${encodeURIComponent(userInput)}`;
-            let fallbackText = `I'm sorry, I couldn't retrieve a response from the API (Error: ${error.message}). `;
+            let fallbackText = `Oh no, I hit a snag! I couldn’t fetch that info (Error: ${error.message}). `;
             
-            // Enhanced fallback for basic GIS questions
             if (userInput.toLowerCase().includes('what is gis')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 1\. What is GIS\?[\s\S]*?(?=###|$)/)[0];
+              fallbackText += `But no worries, here’s what I know: ${esriKnowledgeBase.match(/### 1\. What is GIS\?[\s\S]*?(?=###|$)/)[0]} Let’s explore more if you’d like!`;
             } else if (userInput.toLowerCase().includes('experience builder') && userInput.toLowerCase().includes('dashboard')) {
-              fallbackText += `Based on my knowledge base:\n\n` + esriKnowledgeBase.match(/### 18\. Creating a Dashboard in ArcGIS Experience Builder[\s\S]*?(?=###|$)/)[0];
+              fallbackText += `No problem, let’s pivot! Here’s the rundown: ${esriKnowledgeBase.match(/### 18\. Creating a Dashboard in ArcGIS Experience Builder[\s\S]*?(?=###|$)/)[0]} Got more questions? I’m all ears!`;
+            } else if (userInput.toLowerCase().includes('bia') || userInput.toLowerCase().includes('geospatial') || userInput.toLowerCase().includes('bogs')) {
+              fallbackText += `Let’s tackle this together! Here’s some info from my BIA knowledge base: ${esriKnowledgeBase.match(/### 22\. BIA Branch of Geospatial Support \(BOGS\)[\s\S]*?(?=###|$)/)[0]} For more, contact geospatial@bia.gov or MWRGIS@bia.gov. Want to dive deeper?`;
             } else {
-              fallbackText += `Please check the official [Esri Documentation for "${userInput}"](${searchUrl}) or try rephrasing your question.`;
+              fallbackText += `Try checking the [Esri Documentation for "${userInput}"](${searchUrl}) or toss me a rephrased question—I’ll do my best to assist!`;
             }
             botText = fallbackText;
             setMessages((curr) => [...curr, { text: botText, sender: 'bot' }]);
@@ -478,7 +528,7 @@
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-esriBlue flex items-center justify-center text-white font-bold text-sm mr-2">
             GA
           </div>
-          <div className="bg-esriLightBlue p-3 rounded-xl shadow-sm max-w-lg">
+          <div className="bg-esriLightBlue p-3 rounded-xl shadow-sm max-w-lg message-content">
             <div
               className="text-gray-900 leading-relaxed markdown-content"
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(message.text)) }}
@@ -528,10 +578,10 @@
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-esriBlue">
-                  <path d="M7.749 1.576a.77.77 0 0 0-.251.725l1.58 4.743a.77.77 0 0 0 .903.543l3.411-.99a.77.77 0 0 1 .588.163l4.777 4.778a.77.77 0 0 1 .163.587l-.99 3.412a.77.77 0 0 0 .543.903l4.743 1.581c.29.097.436.417.252.724a.77.77 0 0 1-.725.252l-4.743-1.58a.77.77 0 0 0-.903.543l-.99 3.411a.77.77 0 0 1-.163.588l-4.778 4.777a.77.77 0 0 1-.587.163l-3.412-.99a.77.77 0 0 0-.903.543l-1.581 4.743a.77.77 0 0 1-.724.252a.77.77 0 0 1-.252-.725l1.58-4.743a.77.77 0 0 0-.543-.903l-3.411-.99a.77.77 0 0 1-.588-.163l-4.777-4.778a.77.77 0 0 1-.163-.587l.99-3.412a.77.77 0 0 0-.543-.903L.027 2.39a.77.77 0 0 1 .724-.251Z" />
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/>
                 </svg>
               </div>
-              <h1 className="text-xl font-bold">Geo-Assist</h1>
+              <h1 className="text-xl font-bold">BIA Geo-Assist</h1>
             </div>
             <button
               onClick={() => setShowConfirmModal(true)}
@@ -543,7 +593,7 @@
           <div className="flex-1 overflow-y-auto p-4 bg-esriGray chat-scroll-container">
             {messages.length === 0 && (
               <div className="flex items-center justify-center h-full text-center text-gray-500">
-                <p className="text-lg">Your conversation with Geo-Assist will appear here.</p>
+                <p className="text-lg">Your conversation with BIA Geo-Assist will appear here.</p>
               </div>
             )}
             {messages.map((msg, index) => (
@@ -573,7 +623,7 @@
                 ref={inputRef}
                 type="text"
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-esriBlue focus:border-transparent transition-all duration-200 disabled:opacity-50"
-                placeholder="Ask a question about Esri..."
+                placeholder="Ask a question about Esri or BIA GIS..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}
@@ -589,6 +639,9 @@
               </button>
             </div>
           </form>
+          <div className="p-2 bg-gray-100 border-t border-gray-200 text-center text-xs text-gray-600">
+            For Midwest GIS support, email the Regional Geospatial Coordinator, MWRGIS@bia.gov.
+          </div>
           {showConfirmModal && <ConfirmModal />}
         </div>
       );
