@@ -133,6 +133,26 @@
         }
       }, [messages]);
 
+      // Function to save conversation as a text file
+      const saveConversation = () => {
+        try {
+          const conversationText = messages.map(msg => 
+            `${msg.sender === 'user' ? 'You' : 'BIA Geo-Assist'}: ${msg.text}`
+          ).join('\n\n');
+          const blob = new Blob([conversationText], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          a.download = `bia_geo_assist_conversation_${timestamp}.txt`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          console.error('Failed to save conversation:', e);
+          alert('Sorry, there was an error saving the conversation. Please try again.');
+        }
+      };
+
       // Expanded Knowledge base with BIA-specific additions
       const esriKnowledgeBase = `
 ## Esri GIS Technical Support Knowledge Base
@@ -583,12 +603,20 @@
               </div>
               <h1 className="text-xl font-bold">BIA Geo-Assist</h1>
             </div>
-            <button
-              onClick={() => setShowConfirmModal(true)}
-              className="text-sm text-white hover:text-gray-200 transition-all duration-200"
-            >
-              Clear Chat
-            </button>
+            <div className="flex space-x-2">
+              <button
+                onClick={saveConversation}
+                className="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-200 rounded-md hover:bg-gray-300 transition-all duration-200"
+              >
+                Save Chat
+              </button>
+              <button
+                onClick={() => setShowConfirmModal(true)}
+                className="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-200 rounded-md hover:bg-gray-300 transition-all duration-200"
+              >
+                Clear Chat
+              </button>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 bg-esriGray chat-scroll-container">
             {messages.length === 0 && (
