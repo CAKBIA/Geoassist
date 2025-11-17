@@ -85,7 +85,7 @@ tailwind.config = {
       const messagesEndRef = React.useRef(null);
       const inputRef = React.useRef(null);
       const apiKey = "AIzaSyDy_6oRJ-DOMDVjoqeXD4sIJ5RwP8krQOc"; // Replace if invalid
-      const model = "gemini-1.5-flash"; // Stable model
+      const model = "gemini-2.5-flash"; // Stable model
       const cx = "25ed03fb10e654c08"; // Replace with your Google CSE ID
 
       // Load stored messages or initial welcome
