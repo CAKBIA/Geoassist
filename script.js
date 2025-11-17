@@ -84,7 +84,7 @@ tailwind.config = {
       const [showConfirmModal, setShowConfirmModal] = React.useState(false);
       const messagesEndRef = React.useRef(null);
       const inputRef = React.useRef(null);
-      const apiKey = "AIzaSyADvIoS1NcspmkXp3sHYrD38zhh1DlBXAM"; // Replace if invalid
+      const apiKey = "AIzaSyDy_6oRJ-DOMDVjoqeXD4sIJ5RwP8krQOc"; // Replace if invalid
       const model = "gemini-1.5-flash"; // Stable model
       const cx = "25ed03fb10e654c08"; // Replace with your Google CSE ID
 
